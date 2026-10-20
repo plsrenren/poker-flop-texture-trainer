@@ -67,6 +67,29 @@
       }
     }
 
+    /* Strategy drills: 4-card boards (flop + turn) must fit a phone row */
+    .poker-card-sm {
+      width: 64px;
+      height: 94px;
+      border-radius: 10px;
+      box-sizing: border-box;
+      flex-shrink: 0;
+    }
+    @media (min-width: 480px) {
+      .poker-card-sm {
+        width: 80px;
+        height: 118px;
+        border-radius: 12px;
+      }
+    }
+    @media (min-width: 640px) {
+      .poker-card-sm {
+        width: 104px;
+        height: 150px;
+        border-radius: 14px;
+      }
+    }
+
     .poker-card-lab {
       width: 74px;
       height: 110px;
@@ -134,6 +157,9 @@
           </button>
           <button id="nav-lab-btn" type="button" class="nav-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 shrink-0">
             Custom Lab
+          </button>
+          <button id="nav-strategy-btn" type="button" class="nav-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 shrink-0">
+            Strategy Drills
           </button>
           <button id="nav-stats-btn" type="button" class="nav-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 shrink-0">
             Stats & Review
@@ -481,6 +507,75 @@
       </div>
     </section>
 
+    <!-- VIEW 4: STRATEGY DRILLS -->
+    <section id="view-strategy" class="hidden flex flex-col gap-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 sm:p-4 flex flex-col gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-white">🐴 Strategy Drills</h2>
+            <p class="text-xs text-slate-400">Live low-stakes ideas inspired by Hungry Horse Poker. Spot: BTN opens, BB calls.</p>
+          </div>
+          <div class="flex items-center gap-4 text-xs shrink-0">
+            <div>
+              <span class="text-slate-400 text-[10px] block font-medium">Streak</span>
+              <span id="strat-streak-val" class="text-lg font-bold text-amber-400">0</span><span class="text-xs"> 🔥</span>
+            </div>
+            <div class="h-6 w-px bg-slate-800"></div>
+            <div>
+              <span class="text-slate-400 text-[10px] block font-medium">Accuracy</span>
+              <span id="strat-accuracy-val" class="text-lg font-bold text-emerald-400">--%</span>
+            </div>
+            <div class="h-6 w-px bg-slate-800"></div>
+            <div>
+              <span class="text-slate-400 text-[10px] block font-medium">Spots</span>
+              <span id="strat-total-val" class="text-lg font-bold text-slate-200">0</span>
+            </div>
+          </div>
+        </div>
+        <div id="strat-type-tabs" class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+          <button type="button" data-strat="bet" class="strat-type-btn py-2 px-2 rounded-xl border-2 text-xs sm:text-sm font-bold transition active:scale-95">🎯 Bet or Check</button>
+          <button type="button" data-strat="size" class="strat-type-btn py-2 px-2 rounded-xl border-2 text-xs sm:text-sm font-bold transition active:scale-95">📏 Bet Size</button>
+          <button type="button" data-strat="adv" class="strat-type-btn py-2 px-2 rounded-xl border-2 text-xs sm:text-sm font-bold transition active:scale-95">⚖️ Who Has the Edge</button>
+          <button type="button" data-strat="turn" class="strat-type-btn py-2 px-2 rounded-xl border-2 text-xs sm:text-sm font-bold transition active:scale-95">🃏 Turn Card</button>
+        </div>
+      </div>
+
+      <div class="relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-amber-950/80 poker-table-border poker-felt p-4 sm:p-6 min-h-[170px] sm:min-h-[230px] flex flex-col items-center justify-center gap-2.5">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.65)_100%)] pointer-events-none"></div>
+        <div id="strat-board-label" class="relative z-10 text-[10px] sm:text-xs tracking-widest uppercase font-bold text-emerald-400/80">THE FLOP</div>
+        <div id="strat-cards-container" class="relative z-10 flex items-center justify-center gap-2 sm:gap-3 max-w-full min-h-[94px] sm:min-h-[150px]"></div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 sm:p-5 flex flex-col gap-3 shadow-xl">
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2 border-b border-slate-800 pb-3">
+          <div>
+            <h3 id="strat-question" class="text-sm sm:text-base font-extrabold text-white">--</h3>
+            <p id="strat-scenario" class="text-[11px] sm:text-xs text-slate-400 mt-0.5">--</p>
+          </div>
+          <label id="strat-sticky-wrap" class="hidden flex items-center gap-2 text-xs text-slate-300 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-2 cursor-pointer select-none shrink-0">
+            <input id="strat-sticky-toggle" type="checkbox" class="w-4 h-4 accent-amber-500">
+            <span><span class="font-bold text-amber-300">Sticky pool</span> (calls too much)</span>
+          </label>
+        </div>
+        <div id="strat-options" class="grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-[11px] text-slate-500 hidden sm:inline">Keys 1–3 to answer, Enter for next</span>
+          <button id="strat-next-btn" type="button" class="ml-auto py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition active:scale-95">Skip</button>
+        </div>
+      </div>
+
+      <div id="strat-feedback" class="hidden rounded-2xl p-4 border flex flex-col gap-2 shadow-xl">
+        <div class="flex items-center gap-3">
+          <div id="strat-feedback-icon" class="w-10 h-10 rounded-xl flex items-center justify-center text-xl font-bold shrink-0 border">✓</div>
+          <div>
+            <div id="strat-feedback-title" class="text-base sm:text-lg font-black">Correct!</div>
+            <div id="strat-feedback-answer" class="text-xs sm:text-sm text-slate-300"></div>
+          </div>
+        </div>
+        <ul id="strat-feedback-reasons" class="text-[11px] sm:text-xs text-slate-300 flex flex-col gap-1.5 pl-1"></ul>
+      </div>
+    </section>
+
     <!-- VIEW 5: STATS -->
     <section id="view-stats" class="hidden flex flex-col gap-4">
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -629,16 +724,17 @@
       const colors = getCardColors(card.suit);
       const symbol = SUIT_SYMBOLS[card.suit];
       const rankLabel = RANK_LABELS[card.rank];
-      const cardClass = size === 'lab-slot' ? 'poker-card-lab' : 'poker-card';
+      const cardClass = size === 'lab-slot' ? 'poker-card-lab' : size === 'small' ? 'poker-card-sm' : 'poker-card';
+      const isCompact = size === 'lab-slot' || size === 'small';
 
       return `
         <div class="${cardClass} select-none shadow-xl flex flex-col justify-between relative overflow-hidden font-bold ${animClass}"
              style="background-color: ${colors.bg}; color: ${colors.text}; border: 2px solid ${colors.border}; padding: 8px 10px;">
           <!-- Rank (top left) -->
-          <div class="leading-none self-start tracking-tighter font-black ${size === 'lab-slot' ? 'text-xl sm:text-3xl' : 'text-2xl sm:text-3xl lg:text-4xl'}">${rankLabel}</div>
+          <div class="leading-none self-start tracking-tighter font-black ${isCompact ? 'text-xl sm:text-3xl' : 'text-2xl sm:text-3xl lg:text-4xl'}">${rankLabel}</div>
           <!-- Suit (shown once, centred) -->
           <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="padding-top: 18%;">
-            <span class="font-bold leading-none ${size === 'lab-slot' ? 'text-4xl sm:text-6xl' : 'text-5xl sm:text-6xl'}" style="color: ${colors.suitColor}">${symbol}</span>
+            <span class="font-bold leading-none ${isCompact ? 'text-4xl sm:text-6xl' : 'text-5xl sm:text-6xl'}" style="color: ${colors.suitColor}">${symbol}</span>
           </div>
         </div>
       `;
@@ -807,6 +903,7 @@
         cards, ranks, suits,
         isRainbow, isTwoTone, isMonotone, isTrips, isPaired,
         topRank, overcardsCount, overcardPct,
+        straightScore: straightCoord.score, broadwayCount,
         wetScore, isWet, wetLabel: isWet ? 'Wet' : 'Dry', wetReasons,
         dynScore, isDynamic, dynLabel: isDynamic ? 'Dynamic' : 'Static', dynReasons,
         quadrantKey, quadrantTitle: quadrantTitles[quadrantKey],
@@ -1294,8 +1391,328 @@
       }
     }
 
+    // STRATEGY DRILLS (BTN open vs BB call, single-raised pot)
+    // Heuristics built on evaluateFlop; simplified rules of thumb, not solver output.
+
+    function cardStr(c) {
+      return `${RANK_LABELS[c.rank]}${SUIT_SYMBOLS[c.suit]}`;
+    }
+
+    // Positive = preflop raiser (BTN) has the range edge, negative = caller (BB)
+    function rangeEdge(ev) {
+      let score = 0;
+      const reasons = [];
+      const top = ev.topRank;
+      const topPts = { 14: 3, 13: 3, 12: 2, 11: 1, 10: 0 }[top] ?? -1;
+      score += topPts;
+      if (top >= 13) reasons.push(`<strong>${RANK_LABELS[top]}-high:</strong> BTN has far more strong ${RANK_LABELS[top]}x hands (${top === 14 ? 'AK, AQ, AJ' : 'AK, KQ, KJ'}) and BB 3-bets many of its best ones preflop.`);
+      else if (top >= 11) reasons.push(`<strong>${RANK_LABELS[top]}-high:</strong> BTN still holds more big pairs and broadway hands that beat or dominate BB here.`);
+      else reasons.push(`<strong>${RANK_LABELS[top]}-high:</strong> Middle and low cards hit BB's wide defending range (suited connectors, small pairs, gappers).`);
+
+      if (ev.broadwayCount >= 2 && !ev.isPaired && !ev.isTrips) {
+        score += 1;
+        reasons.push(`<strong>${ev.broadwayCount} broadways:</strong> BTN's opening range is heavier in broadway combos.`);
+      }
+      if (ev.isPaired || ev.isTrips) {
+        score += 2;
+        reasons.push(`<strong>Paired board:</strong> Few two-pair or straight combos for BB, so BTN's overpairs and high cards dominate.`);
+      } else if (ev.straightScore >= 32) {
+        score -= 2;
+        reasons.push(`<strong>Connected:</strong> Straights and two-pair land in BB's range far more than BTN's.`);
+      } else if (ev.straightScore >= 22) {
+        score -= 1;
+        reasons.push(`<strong>Semi-connected:</strong> BB has more gutshots, open-enders and two-pair combos.`);
+      } else if (top <= 9) {
+        score += 1;
+        reasons.push(`<strong>Disconnected:</strong> BTN's overpairs offset BB's extra low pairs.`);
+      }
+      if (ev.isMonotone && top < 12) {
+        score -= 1;
+        reasons.push(`<strong>Low monotone:</strong> BB defends more small suited hands.`);
+      }
+      const side = score >= 1 ? 'raiser' : score <= -2 ? 'caller' : 'even';
+      return { score, side, reasons };
+    }
+
+    function analyzeBetOrCheck(ev, edge) {
+      let answer;
+      if (ev.quadrantKey === 'dry_static') answer = 'small';
+      else if (ev.quadrantKey === 'wet_static') answer = edge.score >= 1 ? 'small' : 'check';
+      else if (ev.quadrantKey === 'dry_dynamic') answer = edge.score >= 0 ? 'big' : 'check';
+      else answer = edge.score >= 1 ? 'big' : 'check';
+
+      const why = {
+        small: `You have the edge and the board is ${ev.quadrantTitle.toLowerCase()}, so few turns hurt you. A small bet (25–33%) with your whole range wins the pot cheaply and makes BB's weak pairs and floats pay. This is the classic "range bet in position" spot.`,
+        big: `The board is dynamic, so many turn cards change who's ahead. Bet bigger (66–80%) with value and strong draws, check your weaker hands, and make overcards and draws pay to see the turn.`,
+        check: `BB's range hits this board as well as or better than yours. Betting everything here just builds pots you're often behind in. Check back a lot, keep your showdown value, and attack good turn cards.`
+      };
+      return { answer, reasons: [why[answer], ...edge.reasons] };
+    }
+
+    function analyzeBetSize(ev, sticky) {
+      const base = { dry_static: 0, wet_static: 0, dry_dynamic: 1, wet_dynamic: 2 }[ev.quadrantKey];
+      const level = sticky ? Math.min(2, base + 1) : base;
+      const answer = ['small', 'medium', 'large'][level];
+      const reasons = [`<strong>${ev.quadrantTitle}:</strong> ${ev.gtoCbet}`];
+      if (sticky) {
+        reasons.push(`<strong>Sticky pool:</strong> Low-stakes players are calling more than ever. Against players who won't fold, size up for value, since they call the bigger bet with the same hands.${base === 2 ? ' This board is already a big-bet board, so stay large.' : ''}`);
+      } else {
+        reasons.push(`<strong>Balanced pool:</strong> Use the standard size for the texture. Turn on "Sticky pool" to practise the low-stakes adjustment.`);
+      }
+      return { answer, reasons };
+    }
+
+    function straightWindows(ranks) {
+      // 5-rank windows (A can play low) holding >= 3 distinct board ranks
+      const set = new Set(ranks);
+      if (set.has(14)) set.add(1);
+      const windows = [];
+      for (let lo = 1; lo <= 10; lo++) {
+        let n = 0;
+        for (let r = lo; r < lo + 5; r++) if (set.has(r)) n++;
+        windows.push(n);
+      }
+      return windows;
+    }
+
+    function analyzeTurn(flop, turn, ev) {
+      const before = straightWindows(flop.map(c => c.rank));
+      const after = straightWindows([...flop, turn].map(c => c.rank));
+      let opensStraight = false, oneCardStraight = false, broadwayStraight = false;
+      after.forEach((n, i) => {
+        const newThree = n >= 3 && before[i] < 3;
+        const newFour = n >= 4 && before[i] < 4;
+        if (newThree || newFour) {
+          opensStraight = true;
+          if (newFour) oneCardStraight = true;
+          if (i + 1 === 10) broadwayStraight = true;
+        }
+      });
+      const flushCount = flop.filter(c => c.suit === turn.suit).length + 1;
+      const completesFlush = flushCount >= 3;
+      const pairsBoard = flop.some(c => c.rank === turn.rank);
+      const isHighOvercard = turn.rank > ev.topRank && turn.rank >= 12;
+      const t = cardStr(turn);
+
+      let answer, reasons = [];
+      if (completesFlush) {
+        answer = 'caller';
+        reasons.push(`<strong>${t} brings ${flushCount === 3 ? 'the flush' : 'a fourth flush card'}:</strong> BB defends lots of suited hands that check-call the flop, while BTN's flop bets lean on overpairs and top pairs.`);
+      } else if (oneCardStraight || (opensStraight && !isHighOvercard && !broadwayStraight)) {
+        answer = 'caller';
+        reasons.push(`<strong>${t} connects the board:</strong> New straights and two-pairs mostly come from BB's suited connectors and gappers.`);
+      } else if (isHighOvercard || broadwayStraight) {
+        answer = 'raiser';
+        reasons.push(`<strong>${t} is a ${broadwayStraight ? 'broadway straight card' : 'high overcard'}:</strong> BTN has far more Ax, Kx and broadway hands. BB's flop pairs are now often second best, so this is a great card to keep betting or to barrel as a bluff.`);
+      } else if (pairsBoard) {
+        answer = 'neither';
+        reasons.push(`<strong>${t} pairs the board:</strong> Few hands improve. The leader on the flop is usually still the leader.`);
+      } else {
+        answer = 'neither';
+        reasons.push(`<strong>${t} is a brick:</strong> No new flush, no new straight, not a high overcard. The ranges stay about where they were on the flop.`);
+      }
+      return { answer, reasons };
+    }
+
+    const STRAT_TYPES = {
+      bet: {
+        question: 'Range bet small, bet big, or check back?',
+        scenario: 'BTN opens, BB calls. BB checks to you on the button. What is your default plan with your whole range?',
+        options: [
+          { key: 'small', title: 'Range bet small', hint: '25–33% with everything' },
+          { key: 'big', title: 'Bet big, polarized', hint: '66–80% with value and draws' },
+          { key: 'check', title: 'Check back a lot', hint: 'Protect your range, control the pot' }
+        ]
+      },
+      size: {
+        question: 'You are betting for value. What size?',
+        scenario: 'BTN opens, BB calls, BB checks. You have a strong hand and want to get paid.',
+        options: [
+          { key: 'small', title: '25–33% pot', hint: 'Small and cheap' },
+          { key: 'medium', title: '50–66% pot', hint: 'Medium' },
+          { key: 'large', title: '75%+ pot', hint: 'Large, charge them' }
+        ]
+      },
+      adv: {
+        question: 'Who has the range advantage on this flop?',
+        scenario: 'BTN opens, BB calls. Whose range connects better with this board overall?',
+        options: [
+          { key: 'raiser', title: 'Raiser (BTN)', hint: 'More strong hands and overpairs' },
+          { key: 'even', title: 'Roughly even', hint: 'Both ranges hit it' },
+          { key: 'caller', title: 'Caller (BB)', hint: 'More straights, two-pair, draws' }
+        ]
+      },
+      turn: {
+        question: 'Who does this turn card help?',
+        scenario: 'BTN opened, BB called, and BTN bet the flop and got called. Here comes the turn.',
+        options: [
+          { key: 'raiser', title: 'Raiser (BTN)', hint: 'Good card to keep betting' },
+          { key: 'neither', title: 'Neither (brick)', hint: 'Not much changes' },
+          { key: 'caller', title: 'Caller (BB)', hint: 'Completes BB\'s draws' }
+        ]
+      }
+    };
+
+    const STRAT_STORAGE_KEY = 'flopmaster_strategy_v1';
+    let stratState = { type: 'bet', sticky: false, stats: {} };
+    let stratSpot = null;
+    let stratAnswered = false;
+
+    function loadStratState() {
+      try {
+        const raw = localStorage.getItem(STRAT_STORAGE_KEY);
+        if (raw) stratState = { ...stratState, ...JSON.parse(raw) };
+      } catch (e) {}
+      if (!STRAT_TYPES[stratState.type]) stratState.type = 'bet';
+    }
+
+    function saveStratState() {
+      try { localStorage.setItem(STRAT_STORAGE_KEY, JSON.stringify(stratState)); } catch (e) {}
+    }
+
+    function stratStatsFor(type) {
+      if (!stratState.stats[type]) stratState.stats[type] = { total: 0, correct: 0, streak: 0, best: 0 };
+      return stratState.stats[type];
+    }
+
+    function solveStratSpot(type, cards, turn) {
+      const ev = evaluateFlop(cards);
+      if (type === 'bet') return analyzeBetOrCheck(ev, rangeEdge(ev));
+      if (type === 'size') return analyzeBetSize(ev, stratState.sticky);
+      if (type === 'adv') {
+        const edge = rangeEdge(ev);
+        return { answer: edge.side, reasons: edge.reasons };
+      }
+      return analyzeTurn(cards, turn, ev);
+    }
+
+    function dealStratSpot() {
+      const type = stratState.type;
+      const def = STRAT_TYPES[type];
+      // Pick the target answer first so every answer shows up about equally often
+      const target = def.options[Math.floor(Math.random() * def.options.length)].key;
+      let spot = null;
+      for (let attempt = 0; attempt < 400; attempt++) {
+        const cards = sortCards(generateRandomFlop('all'));
+        let turn = null;
+        if (type === 'turn') {
+          const rest = generateFullDeck().filter(d => !cards.some(c => c.rank === d.rank && c.suit === d.suit));
+          turn = rest[Math.floor(Math.random() * rest.length)];
+        }
+        const solved = solveStratSpot(type, cards, turn);
+        spot = { cards, turn, solved };
+        if (solved.answer === target) break;
+      }
+      stratSpot = spot;
+      stratAnswered = false;
+      playDealSound();
+      renderStratSpot(true);
+    }
+
+    function renderStratCards(anim) {
+      const container = document.getElementById('strat-cards-container');
+      if (!container || !stratSpot) return;
+      let html = stratSpot.cards.map((c, idx) => createCardHTML(c, anim ? `animate-card-${idx + 1}` : '', 'small')).join('');
+      if (stratSpot.turn) {
+        html += `<div class="w-px self-stretch bg-emerald-300/30 mx-0.5 sm:mx-1"></div>` + createCardHTML(stratSpot.turn, anim ? 'animate-card-3' : '', 'small');
+      }
+      container.innerHTML = html;
+      const label = document.getElementById('strat-board-label');
+      if (label) label.textContent = stratSpot.turn ? 'FLOP  |  TURN' : 'THE FLOP';
+    }
+
+    function renderStratSpot(anim = false) {
+      const type = stratState.type;
+      const def = STRAT_TYPES[type];
+
+      document.querySelectorAll('.strat-type-btn').forEach(btn => {
+        const active = btn.getAttribute('data-strat') === type;
+        btn.className = `strat-type-btn py-2 px-2 rounded-xl border-2 text-xs sm:text-sm font-bold transition active:scale-95 ${active ? 'border-emerald-500 bg-emerald-950/70 text-emerald-300' : 'border-slate-700 text-slate-300 hover:border-slate-500'}`;
+      });
+
+      document.getElementById('strat-question').textContent = def.question;
+      document.getElementById('strat-scenario').textContent = def.scenario;
+      document.getElementById('strat-sticky-wrap').classList.toggle('hidden', type !== 'size');
+      document.getElementById('strat-sticky-toggle').checked = !!stratState.sticky;
+
+      renderStratCards(anim);
+
+      const optsEl = document.getElementById('strat-options');
+      optsEl.innerHTML = def.options.map((o, i) => `
+        <button type="button" data-key="${o.key}" class="strat-opt-btn p-3 rounded-xl border-2 border-slate-800 bg-slate-950 hover:border-emerald-500 text-left transition active:scale-[0.98]">
+          <div class="font-bold text-slate-100 text-sm"><span class="hidden sm:inline text-slate-500 font-mono-code text-xs mr-1">${i + 1}</span>${o.title}</div>
+          <div class="text-[11px] text-slate-400">${o.hint}</div>
+        </button>
+      `).join('');
+      optsEl.querySelectorAll('.strat-opt-btn').forEach(btn => {
+        btn.addEventListener('click', () => answerStrat(btn.getAttribute('data-key')));
+      });
+
+      document.getElementById('strat-feedback').classList.add('hidden');
+      document.getElementById('strat-next-btn').textContent = 'Skip';
+      updateStratStatsUI();
+    }
+
+    function answerStrat(key) {
+      if (stratAnswered || !stratSpot) return;
+      stratAnswered = true;
+      const def = STRAT_TYPES[stratState.type];
+      const correctKey = stratSpot.solved.answer;
+      const isCorrect = key === correctKey;
+
+      const s = stratStatsFor(stratState.type);
+      s.total++;
+      if (isCorrect) {
+        s.correct++;
+        s.streak++;
+        if (s.streak > s.best) s.best = s.streak;
+        playCorrectSound();
+      } else {
+        s.streak = 0;
+        playWrongSound();
+      }
+      saveStratState();
+      updateStratStatsUI();
+
+      document.querySelectorAll('.strat-opt-btn').forEach(btn => {
+        const k = btn.getAttribute('data-key');
+        const base = 'strat-opt-btn p-3 rounded-xl border-2 text-left transition';
+        if (k === correctKey) btn.className = `${base} border-emerald-500 bg-emerald-950/60`;
+        else if (k === key) btn.className = `${base} border-rose-500 bg-rose-950/50`;
+        else btn.className = `${base} border-slate-800 bg-slate-950 opacity-60`;
+      });
+
+      const correctTitle = def.options.find(o => o.key === correctKey).title;
+      const fb = document.getElementById('strat-feedback');
+      const icon = document.getElementById('strat-feedback-icon');
+      const title = document.getElementById('strat-feedback-title');
+      fb.className = `rounded-2xl p-4 border flex flex-col gap-2 shadow-xl ${isCorrect ? 'border-emerald-500/40 bg-emerald-950/40' : 'border-rose-500/40 bg-rose-950/40'}`;
+      icon.className = `w-10 h-10 rounded-xl flex items-center justify-center text-xl font-bold shrink-0 border ${isCorrect ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' : 'bg-rose-500/20 text-rose-400 border-rose-500/40'}`;
+      icon.textContent = isCorrect ? '✓' : '✗';
+      title.className = `text-base sm:text-lg font-black ${isCorrect ? 'text-emerald-300' : 'text-rose-300'}`;
+      title.textContent = isCorrect ? 'Correct!' : 'Not Quite!';
+      document.getElementById('strat-feedback-answer').innerHTML = `Answer: <span class="font-bold underline text-white">${correctTitle}</span>`;
+      document.getElementById('strat-feedback-reasons').innerHTML = stratSpot.solved.reasons.map(r => `<li>• ${r}</li>`).join('');
+      fb.classList.remove('hidden');
+      document.getElementById('strat-next-btn').textContent = 'Next Spot';
+    }
+
+    function updateStratStatsUI() {
+      const s = stratStatsFor(stratState.type);
+      document.getElementById('strat-streak-val').textContent = s.streak;
+      document.getElementById('strat-accuracy-val').textContent = s.total ? `${Math.round((s.correct / s.total) * 100)}%` : '--%';
+      document.getElementById('strat-total-val').textContent = s.total;
+    }
+
+    function setStratType(type) {
+      if (!STRAT_TYPES[type]) return;
+      stratState.type = type;
+      saveStratState();
+      dealStratSpot();
+    }
+
     function switchView(viewId) {
-      ['view-drill', 'view-challenge', 'view-lab', 'view-stats'].forEach(id => {
+      ['view-drill', 'view-challenge', 'view-lab', 'view-strategy', 'view-stats'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.toggle('hidden', id !== viewId);
       });
@@ -1304,6 +1721,7 @@
         'view-drill': 'nav-drill-btn',
         'view-challenge': 'nav-challenge-btn',
         'view-lab': 'nav-lab-btn',
+        'view-strategy': 'nav-strategy-btn',
         'view-stats': 'nav-stats-btn'
       };
 
@@ -1320,12 +1738,14 @@
 
       if (viewId === 'view-challenge' && challengeCards.length === 0) startChallenge();
       if (viewId === 'view-lab') { buildDeckPicker(); renderLab(); }
+      if (viewId === 'view-strategy' && !stratSpot) dealStratSpot();
       if (viewId === 'view-stats') updateStatsUI();
     }
 
     // MAIN INITIALIZATION FUNCTION
     function initApp() {
       loadState();
+      loadStratState();
       updateStatsUI();
 
       // Tab Navigation
@@ -1337,6 +1757,8 @@
       if (labNav) labNav.addEventListener('click', () => switchView('view-lab'));
       const statsNav = document.getElementById('nav-stats-btn');
       if (statsNav) statsNav.addEventListener('click', () => switchView('view-stats'));
+      const strategyNav = document.getElementById('nav-strategy-btn');
+      if (strategyNav) strategyNav.addEventListener('click', () => switchView('view-strategy'));
 
       // 4-Color Deck Switch
       function applyDeckColorUI() {
@@ -1356,6 +1778,7 @@
         savePrefs();
         applyDeckColorUI();
         renderFlopCards(currentDrillCards, 'flop-cards-container', false);
+        if (stratSpot) renderStratCards(false);
         if (challengeCards[challengeCurrentIndex]) renderFlopCards(challengeCards[challengeCurrentIndex], 'challenge-cards-container', false);
         const labView = document.getElementById('view-lab');
         if (labView && !labView.classList.contains('hidden')) {
@@ -1440,6 +1863,20 @@
         renderLab();
       });
 
+      // Strategy Drill Listeners
+      document.querySelectorAll('.strat-type-btn').forEach(btn => {
+        btn.addEventListener('click', () => setStratType(btn.getAttribute('data-strat')));
+      });
+      const stratNextBtn = document.getElementById('strat-next-btn');
+      if (stratNextBtn) stratNextBtn.addEventListener('click', dealStratSpot);
+      const stickyToggle = document.getElementById('strat-sticky-toggle');
+      if (stickyToggle) stickyToggle.addEventListener('change', () => {
+        stratState.sticky = stickyToggle.checked;
+        saveStratState();
+        // The right size depends on the pool, so start a fresh spot under the new setting
+        dealStratSpot();
+      });
+
       // Stats Reset
       const resetStatsBtn = document.getElementById('btn-reset-stats');
       if (resetStatsBtn) resetStatsBtn.addEventListener('click', () => {
@@ -1447,6 +1884,9 @@
         appState = { streak: 0, bestStreak: 0, totalDealt: 0, correctCount: 0, dryWetCorrect: 0, statDynCorrect: 0, history: [] };
         saveState();
         updateStatsUI();
+        stratState.stats = {};
+        saveStratState();
+        if (stratSpot) updateStratStatsUI();
       });
 
       // Keyboard Shortcuts
@@ -1457,6 +1897,19 @@
         if (challengeView && !challengeView.classList.contains('hidden')) {
           const quads = { '1': 'dry_static', '2': 'dry_dynamic', '3': 'wet_static', '4': 'wet_dynamic' };
           if (quads[e.key]) answerChallenge(quads[e.key]);
+          return;
+        }
+        const strategyView = document.getElementById('view-strategy');
+        if (strategyView && !strategyView.classList.contains('hidden')) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            if (e.target.closest('button') && !e.target.closest('#view-strategy')) return;
+            e.preventDefault();
+            if (stratAnswered) dealStratSpot();
+            return;
+          }
+          const keys = STRAT_TYPES[stratState.type].options.map(o => o.key);
+          const idx = parseInt(e.key, 10) - 1;
+          if (idx >= 0 && idx < keys.length) answerStrat(keys[idx]);
           return;
         }
         const drill = document.getElementById('view-drill');

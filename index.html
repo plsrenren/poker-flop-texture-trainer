@@ -2,863 +2,1569 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Poker Flop Texture Trainer | Dry vs Wet & Static vs Dynamic</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
     body {
       font-family: 'Inter', sans-serif;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .font-mono-code {
       font-family: 'JetBrains Mono', monospace;
     }
-    /* Poker felt background gradient with subtle weave */
     .poker-felt {
-      background: radial-gradient(circle at 50% 20%, #154726 0%, #0c2b17 55%, #06170c 100%);
+      background: radial-gradient(circle at 50% 25%, #154c29 0%, #0d301a 60%, #05140b 100%);
     }
     .poker-table-border {
-      box-shadow: inset 0 0 0 10px #2c1a0e, inset 0 0 25px rgba(0, 0, 0, 0.85), 0 20px 40px -10px rgba(0,0,0,0.7);
+      box-shadow: inset 0 0 0 6px #2b180d, inset 0 0 20px rgba(0, 0, 0, 0.9), 0 16px 32px -8px rgba(0,0,0,0.75);
     }
-    /* Playing card flip & deal animation */
+    @media (min-width: 640px) {
+      .poker-table-border {
+        box-shadow: inset 0 0 0 10px #2b180d, inset 0 0 26px rgba(0, 0, 0, 0.9), 0 20px 40px -10px rgba(0,0,0,0.75);
+      }
+    }
     @keyframes cardDeal {
-      0% { opacity: 0; transform: translateY(-40px) scale(0.9) rotate(-4deg); }
-      100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+      0% { opacity: 0; transform: translateY(-16px) scale(0.92); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
     }
-    .animate-card-1 { animation: cardDeal 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    .animate-card-2 { animation: cardDeal 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    .animate-card-3 { animation: cardDeal 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-card-1 { animation: cardDeal 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-card-2 { animation: cardDeal 0.30s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-card-3 { animation: cardDeal 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-    /* Custom scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    /* Reliable card sizes across all mobile & desktop viewports */
+    .poker-card {
+      width: 82px;
+      height: 120px;
+      border-radius: 12px;
+      box-sizing: border-box;
+      flex-shrink: 0;
+    }
+    @media (min-width: 480px) {
+      .poker-card {
+        width: 96px;
+        height: 140px;
+        border-radius: 14px;
+      }
+    }
+    @media (min-width: 640px) {
+      .poker-card {
+        width: 114px;
+        height: 164px;
+        border-radius: 16px;
+      }
+    }
+
+    .poker-card-lab {
+      width: 74px;
+      height: 110px;
+      border-radius: 10px;
+      box-sizing: border-box;
+      flex-shrink: 0;
+    }
+    @media (min-width: 640px) {
+      .poker-card-lab {
+        width: 92px;
+        height: 136px;
+        border-radius: 14px;
+      }
+    }
+
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
     ::-webkit-scrollbar-thumb { background: rgba(71, 85, 105, 0.6); border-radius: 9999px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.8); }
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-slate-950">
 
-  <!-- TOP NAVIGATION BAR -->
   <header class="border-b border-slate-800 bg-slate-900/95 backdrop-blur sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4 py-2 md:py-0 md:h-16">
+    <div class="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-1.5 md:gap-4 py-2 md:py-0 md:h-16">
         
-        <!-- Top Row on Mobile: Logo/Title & Mobile Controls -->
+        <!-- Mobile & Desktop Brand Header -->
         <div class="flex items-center justify-between gap-2 w-full md:w-auto">
-          <div class="flex items-center gap-2 sm:gap-3">
-            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 p-0.5 shadow-lg shadow-emerald-950/50 flex items-center justify-center font-bold text-slate-950 text-base sm:text-lg shrink-0">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 p-0.5 shadow flex items-center justify-center font-bold text-slate-950 text-base shrink-0">
               ♠️
             </div>
             <div>
-              <div class="flex items-center gap-1.5 sm:gap-2">
+              <div class="flex items-center gap-1.5">
                 <span class="font-extrabold tracking-tight text-white text-base sm:text-xl">FlopMaster</span>
-                <span class="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-semibold border border-emerald-500/30">GTO Trainer</span>
+                <span class="text-[9px] sm:text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-semibold border border-emerald-500/30">GTO Trainer</span>
               </div>
-              <p class="text-[11px] text-slate-400 hidden sm:block">Board Texture Classifier: Dry/Wet &bull; Static/Dynamic</p>
+              <p class="text-[10px] text-slate-400 hidden sm:block">Texture Classifier: Dry vs Wet &bull; Static vs Dynamic</p>
             </div>
           </div>
 
-          <!-- Global Controls (Mobile) -->
+          <!-- Quick Mobile Actions -->
           <div class="flex md:hidden items-center gap-1.5 shrink-0">
-            <button id="toggle-deck-color-btn-m" title="Toggle 4-Color Deck" class="px-2 py-1 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1 transition">
+            <button id="toggle-deck-color-btn-m" type="button" class="px-2 py-1 rounded-lg border border-slate-700 bg-slate-800 text-xs font-semibold text-slate-200 flex items-center gap-1">
               <span class="flex gap-0.5 font-mono text-[10px]">
                 <span class="text-slate-200">♠</span><span class="text-red-400">♥</span><span id="diamond-preview-icon-m" class="text-blue-400">♦</span><span id="club-preview-icon-m" class="text-emerald-400">♣</span>
               </span>
             </button>
-            <button id="toggle-sound-btn-m" title="Toggle Sound" class="p-1.5 rounded-lg border border-slate-700 bg-slate-800/80 text-slate-300 hover:text-white transition">
-              <svg id="sound-on-svg-m" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-              </svg>
-              <svg id="sound-off-svg-m" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-              </svg>
+            <button id="toggle-sound-btn-m" type="button" class="p-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300">
+              <svg id="sound-on-svg-m" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
+              <svg id="sound-off-svg-m" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>
             </button>
           </div>
         </div>
 
-        <!-- Tab Navigation (Horizontally scrollable on mobile, inline on desktop) -->
-        <nav class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none whitespace-nowrap -mx-1 px-1">
-          <button id="nav-drill-btn" class="nav-tab active-tab px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all bg-emerald-500 text-slate-950 shadow shrink-0">
+        <!-- Navigation Tabs -->
+        <nav class="flex items-center gap-1 overflow-x-auto pb-1 md:pb-0 scrollbar-none whitespace-nowrap w-full md:w-auto">
+          <button id="nav-drill-btn" type="button" class="nav-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-emerald-500 text-slate-950 shrink-0 shadow">
             Drill Mode
           </button>
-          <button id="nav-challenge-btn" class="nav-tab px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-300 hover:text-white hover:bg-slate-800 shrink-0">
-            10-Card Challenge
+          <button id="nav-challenge-btn" type="button" class="nav-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 shrink-0">
+            10-Flop Challenge
           </button>
-          <button id="nav-lab-btn" class="nav-tab px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-300 hover:text-white hover:bg-slate-800 shrink-0">
+          <button id="nav-lab-btn" type="button" class="nav-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 shrink-0">
             Custom Lab
           </button>
-          <button id="nav-theory-btn" class="nav-tab px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-300 hover:text-white hover:bg-slate-800 shrink-0">
+          <button id="nav-theory-btn" type="button" class="nav-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 shrink-0">
             Theory & Matrix
           </button>
-          <button id="nav-stats-btn" class="nav-tab px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-300 hover:text-white hover:bg-slate-800 shrink-0">
+          <button id="nav-stats-btn" type="button" class="nav-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 shrink-0">
             Stats & Review
           </button>
         </nav>
 
-        <!-- Global Controls (Desktop) -->
+        <!-- Desktop Controls -->
         <div class="hidden md:flex items-center gap-2 shrink-0">
-          <button id="toggle-deck-color-btn" title="Toggle 4-Color Deck" class="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 transition">
+          <button id="toggle-deck-color-btn" type="button" class="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 transition">
             <span class="flex gap-0.5 font-mono text-[11px]">
               <span class="text-slate-200">♠</span><span class="text-red-400">♥</span><span id="diamond-preview-icon" class="text-blue-400">♦</span><span id="club-preview-icon" class="text-emerald-400">♣</span>
             </span>
             <span id="deck-color-mode-text">4-Color</span>
           </button>
 
-          <button id="toggle-sound-btn" title="Toggle Sound Effects" class="p-2 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition">
-            <svg id="sound-on-svg" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-            </svg>
-            <svg id="sound-off-svg" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-            </svg>
+          <button id="toggle-sound-btn" type="button" class="p-2 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+            <svg id="sound-on-svg" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
+            <svg id="sound-off-svg" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>
           </button>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- MAIN APP CONTAINER -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 flex flex-col gap-4 sm:gap-6">
+  <main class="flex-1 max-w-7xl w-full mx-auto p-2.5 sm:p-5 lg:p-8 flex flex-col gap-4 sm:gap-6">
 
-    <!-- ========================================== -->
-    <!-- VIEW 1: DRILL / TRAINER MODE -->
-    <!-- ========================================== -->
+    <!-- VIEW 1: DRILL / TRAINER -->
     <section id="view-drill" class="flex flex-col gap-4 sm:gap-6">
       
-      <!-- Quick Control & Stats Bar (Mobile Optimized) -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/60 p-3 sm:p-3.5 rounded-2xl border border-slate-800">
-        <div class="flex items-center justify-between sm:justify-start gap-2 sm:gap-4 text-xs sm:text-sm">
+      <!-- Stats Summary & Filter Toolbar -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 bg-slate-900/80 p-3 rounded-2xl border border-slate-800">
+        <div class="flex items-center justify-around sm:justify-start gap-4 text-xs">
           <div>
-            <span class="text-slate-400 text-[10px] sm:text-xs block">Streak</span>
+            <span class="text-slate-400 text-[10px] block font-medium">Streak</span>
             <div class="flex items-center gap-1">
-              <span id="stat-streak-val" class="text-base sm:text-xl font-bold text-amber-400">0</span>
-              <span class="text-amber-500 text-xs sm:text-base">🔥</span>
+              <span id="stat-streak-val" class="text-lg font-bold text-amber-400">0</span>
+              <span class="text-xs">🔥</span>
             </div>
           </div>
-          <div class="h-6 sm:h-8 w-px bg-slate-800"></div>
+          <div class="h-6 w-px bg-slate-800"></div>
           <div>
-            <span class="text-slate-400 text-[10px] sm:text-xs block">Accuracy</span>
-            <div id="stat-accuracy-val" class="text-base sm:text-xl font-bold text-emerald-400">--%</div>
+            <span class="text-slate-400 text-[10px] block font-medium">Accuracy</span>
+            <div id="stat-accuracy-val" class="text-lg font-bold text-emerald-400">--%</div>
           </div>
-          <div class="h-6 sm:h-8 w-px bg-slate-800"></div>
+          <div class="h-6 w-px bg-slate-800"></div>
           <div>
-            <span class="text-slate-400 text-[10px] sm:text-xs block">Hands Dealt</span>
-            <div id="stat-total-val" class="text-base sm:text-xl font-bold text-slate-200">0</div>
+            <span class="text-slate-400 text-[10px] block font-medium">Hands</span>
+            <div id="stat-total-val" class="text-lg font-bold text-slate-200">0</div>
           </div>
         </div>
 
-        <!-- Flop Type Filter Selector -->
-        <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end pt-2 sm:pt-0 border-t border-slate-800 sm:border-t-0">
-          <div class="flex items-center gap-1.5 flex-1 sm:flex-initial">
-            <label for="drill-filter-select" class="text-xs text-slate-400 font-medium">Filter:</label>
-            <select id="drill-filter-select" class="w-full sm:w-auto bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2 sm:px-2.5 py-1.5 focus:ring-1 focus:ring-emerald-500 focus:outline-none">
-              <option value="all">All Flops (Random)</option>
-              <option value="dry_static">Pure Dry & Static</option>
-              <option value="dry_dynamic">Dry & Dynamic (Low disconnected)</option>
-              <option value="wet_dynamic">Wet & Dynamic (Draw heavy)</option>
-              <option value="wet_static">Wet & Static (Monotone / Paired high)</option>
-              <option value="monotone">Monotone Flops</option>
-              <option value="twotone">Two-Tone Flops</option>
-              <option value="rainbow">Rainbow Flops</option>
-              <option value="paired">Paired Flops</option>
-            </select>
-          </div>
-          <button id="deal-next-btn" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs shadow transition flex items-center gap-1 shrink-0 active:scale-95">
-            <span>New Flop</span>
-            <span class="opacity-60 text-[10px] hidden xs:inline">(Space)</span>
+        <div class="flex items-center gap-2">
+          <select id="drill-filter-select" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl px-2.5 py-2 focus:ring-1 focus:ring-emerald-500 focus:outline-none flex-1 sm:flex-initial">
+            <option value="all">All Flops (Random)</option>
+            <option value="dry_static">Pure Dry & Static</option>
+            <option value="dry_dynamic">Dry & Dynamic (Low)</option>
+            <option value="wet_dynamic">Wet & Dynamic (Draws)</option>
+            <option value="wet_static">Wet & Static (Monotone / Suited high)</option>
+            <option value="monotone">Monotone Flops</option>
+            <option value="twotone">Two-Tone Flops</option>
+            <option value="rainbow">Rainbow Flops</option>
+            <option value="paired">Paired Flops</option>
+          </select>
+          <button id="deal-next-btn" type="button" class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow transition shrink-0 active:scale-95">
+            New Flop
           </button>
         </div>
       </div>
 
-      <!-- POKER FELT TABLE SECTION -->
-      <div class="relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-amber-950/80 shadow-2xl poker-table-border poker-felt p-3 sm:p-8 md:p-10 min-h-[190px] sm:min-h-[290px] md:min-h-[340px] flex flex-col items-center justify-center">
-        <div class="absolute top-3 left-1/2 -translate-x-1/2 text-[10px] sm:text-xs tracking-[0.3em] uppercase text-emerald-200/30 font-semibold select-none">The Flop</div>
-        <div id="drill-board" class="flex items-center justify-center gap-2 sm:gap-4"></div>
-        <div id="drill-board-tags" class="mt-4 sm:mt-6 flex flex-wrap justify-center gap-1.5 text-[10px] sm:text-xs"></div>
-      </div>
-
-      <!-- ANSWER BUTTONS -->
-      <div class="bg-slate-900/60 p-3 sm:p-4 rounded-2xl border border-slate-800">
-        <p class="text-xs sm:text-sm text-slate-400 mb-2.5">Classify this flop <span class="hidden sm:inline text-slate-500">(keys 1–4)</span></p>
-        <div id="drill-answers" class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3"></div>
-      </div>
-
-      <!-- FEEDBACK PANEL -->
-      <div id="drill-feedback" class="hidden bg-slate-900/60 p-3 sm:p-5 rounded-2xl border border-slate-800"></div>
-    </section>
-
-    <!-- ========================================== -->
-    <!-- VIEW 2: 10-CARD CHALLENGE -->
-    <!-- ========================================== -->
-    <section id="view-challenge" class="hidden flex-col gap-4 sm:gap-6">
-      <div id="challenge-intro" class="bg-slate-900/60 p-5 sm:p-8 rounded-2xl border border-slate-800 text-center flex flex-col items-center gap-4">
-        <h2 class="text-xl sm:text-2xl font-extrabold text-white">10-Flop Challenge</h2>
-        <p class="text-sm text-slate-400 max-w-md">Classify 10 random flops as fast and accurately as you can. No feedback until the end. Your best score is saved.</p>
-        <p class="text-sm text-slate-300">Best: <span id="challenge-best" class="font-bold text-amber-400">--</span></p>
-        <button id="challenge-start-btn" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold shadow transition active:scale-95">Start Challenge</button>
-      </div>
-
-      <div id="challenge-play" class="hidden flex-col gap-4 sm:gap-6">
-        <div class="flex items-center justify-between bg-slate-900/60 p-3 rounded-2xl border border-slate-800 text-sm">
-          <div>Flop <span id="challenge-progress" class="font-bold text-white">1</span>/10</div>
-          <div class="flex-1 mx-4 h-2 bg-slate-800 rounded-full overflow-hidden"><div id="challenge-bar" class="h-full bg-emerald-500 transition-all" style="width:0%"></div></div>
-          <div class="font-mono-code text-slate-300"><span id="challenge-timer">0.0</span>s</div>
-          <button id="challenge-quit-btn" class="ml-3 px-2.5 py-1 rounded-lg border border-slate-700 text-xs text-slate-300 hover:bg-slate-800">Quit</button>
-        </div>
-        <div class="relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-amber-950/80 shadow-2xl poker-table-border poker-felt p-3 sm:p-8 min-h-[190px] sm:min-h-[290px] flex items-center justify-center">
-          <div id="challenge-board" class="flex items-center justify-center gap-2 sm:gap-4"></div>
-        </div>
-        <div class="bg-slate-900/60 p-3 sm:p-4 rounded-2xl border border-slate-800">
-          <div id="challenge-answers" class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3"></div>
-        </div>
-      </div>
-
-      <div id="challenge-results" class="hidden flex-col gap-4 bg-slate-900/60 p-4 sm:p-6 rounded-2xl border border-slate-800">
-        <div class="text-center">
-          <h2 class="text-xl sm:text-2xl font-extrabold text-white">Challenge Complete</h2>
-          <p class="mt-2 text-3xl font-extrabold"><span id="challenge-score" class="text-emerald-400">0</span><span class="text-slate-500">/10</span></p>
-          <p class="text-sm text-slate-400 mt-1">Time: <span id="challenge-final-time" class="font-mono-code"></span>s <span id="challenge-new-best" class="hidden ml-2 text-amber-400 font-bold">New best!</span></p>
-        </div>
-        <div id="challenge-review" class="flex flex-col gap-2"></div>
-        <div class="flex justify-center gap-3">
-          <button id="challenge-retry-btn" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold shadow transition active:scale-95">Play Again</button>
-          <button id="challenge-back-btn" class="px-5 py-2.5 rounded-xl border border-slate-700 text-slate-200 hover:bg-slate-800 transition">Back to Drill</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========================================== -->
-    <!-- VIEW 3: CUSTOM LAB -->
-    <!-- ========================================== -->
-    <section id="view-lab" class="hidden flex-col gap-4 sm:gap-6">
-      <div class="relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-amber-950/80 shadow-2xl poker-table-border poker-felt p-3 sm:p-8 min-h-[190px] sm:min-h-[260px] flex flex-col items-center justify-center">
-        <div id="lab-board" class="flex items-center justify-center gap-2 sm:gap-4"></div>
-      </div>
-      <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
-        <p class="text-xs sm:text-sm text-slate-400">Pick any 3 cards below to analyze a flop.</p>
-        <div class="flex gap-2">
-          <button id="lab-random-btn" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs shadow transition active:scale-95">Random</button>
-          <button id="lab-clear-btn" class="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-200 hover:bg-slate-800 text-xs font-semibold transition">Clear</button>
-          <button id="lab-drill-btn" class="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-200 hover:bg-slate-800 text-xs font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed" disabled>Drill this flop</button>
-        </div>
-      </div>
-      <div id="lab-analysis" class="bg-slate-900/60 p-3 sm:p-5 rounded-2xl border border-slate-800 text-sm text-slate-400">Select 3 cards to see the analysis.</div>
-      <div id="lab-picker" class="bg-slate-900/60 p-2 sm:p-4 rounded-2xl border border-slate-800 flex flex-col gap-1.5 overflow-x-auto"></div>
-    </section>
-
-    <!-- ========================================== -->
-    <!-- VIEW 4: THEORY & MATRIX -->
-    <!-- ========================================== -->
-    <section id="view-theory" class="hidden flex-col gap-4 sm:gap-6">
-      <div class="bg-slate-900/60 p-4 sm:p-6 rounded-2xl border border-slate-800">
-        <h2 class="text-lg sm:text-xl font-extrabold text-white mb-2">How this trainer classifies flops</h2>
-        <div class="grid sm:grid-cols-2 gap-4 text-sm text-slate-300">
-          <div>
-            <h3 class="font-bold text-emerald-400 mb-1">Dry vs Wet</h3>
-            <p>How many strong draws and made hands the board allows <em>right now</em>. Points come from suits (two-tone +2, monotone +3) and connectivity (three cards within a five-rank straight window +3, two cards no more than two ranks apart +1). Paired boards take −1. <strong>3+ points = Wet.</strong></p>
+      <!-- Poker Felt Table -->
+      <div class="relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-amber-950/80 shadow-2xl poker-table-border poker-felt p-4 sm:p-7 min-h-[190px] sm:min-h-[250px] flex flex-col items-center justify-center">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.65)_100%)] pointer-events-none"></div>
+        <div class="absolute border border-emerald-400/15 rounded-full w-[94%] h-[86%] pointer-events-none"></div>
+        
+        <div class="relative z-10 flex flex-col items-center gap-2.5 w-full">
+          <div class="text-[10px] sm:text-xs tracking-widest uppercase font-bold text-emerald-400/80">THE COMMUNITY FLOP</div>
+          
+          <div id="flop-cards-container" class="flex items-center justify-center gap-2 sm:gap-4 max-w-full min-h-[120px] sm:min-h-[164px]">
+            <!-- Cards rendered via JS -->
           </div>
-          <div>
-            <h3 class="font-bold text-sky-400 mb-1">Static vs Dynamic</h3>
-            <p>How much the best hand is likely to change on the turn. Points come from a flush draw that can still complete (two-tone +2), straight potential (+3 / +1 as above), and low boards where overcards change everything (high card 9 or lower +3, T–J +1). Paired −1, trips −2. <strong>3+ points = Dynamic.</strong></p>
+
+          <div id="flop-quick-tags" class="flex flex-wrap items-center justify-center gap-1.5 mt-0.5">
+            <!-- Quick tags populated by JS -->
           </div>
         </div>
       </div>
-      <div class="bg-slate-900/60 p-4 sm:p-6 rounded-2xl border border-slate-800">
-        <h2 class="text-lg sm:text-xl font-extrabold text-white mb-1">Texture matrix</h2>
-        <p class="text-xs text-slate-400 mb-4">Click any example to open it in the Custom Lab.</p>
-        <div id="theory-matrix" class="grid sm:grid-cols-2 gap-3"></div>
+
+      <!-- Dimension 1 & Dimension 2 Selection -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 sm:p-5 flex flex-col gap-3.5 shadow-xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div>
+            <h2 class="text-sm sm:text-base font-extrabold text-white">Classify Flop Texture</h2>
+            <p class="text-[11px] sm:text-xs text-slate-400">Pick Draw Density (Dimension 1) and Equity Volatility (Dimension 2).</p>
+          </div>
+          <div class="hidden sm:flex items-center gap-2 text-xs font-mono-code text-slate-400 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
+            <kbd class="px-1 py-0.5 bg-slate-800 rounded text-slate-200">D</kbd> Dry
+            <kbd class="px-1 py-0.5 bg-slate-800 rounded text-slate-200">W</kbd> Wet
+            <span class="text-slate-600">|</span>
+            <kbd class="px-1 py-0.5 bg-slate-800 rounded text-slate-200">S</kbd> Static
+            <kbd class="px-1 py-0.5 bg-slate-800 rounded text-slate-200">Y</kbd> Dynamic
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <!-- Dimension 1: Dry vs Wet -->
+          <div class="bg-slate-950/80 p-3 sm:p-4 rounded-xl border border-slate-800 flex flex-col justify-between gap-2.5">
+            <div>
+              <span class="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[11px] font-mono font-bold">1</span>
+                <span>Draw Density</span>
+              </span>
+              <p class="text-[10px] sm:text-xs text-slate-400 mt-0.5">Flush, straight, or combo draws available?</p>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <button id="btn-toggle-dry" type="button" class="dim-btn py-2.5 px-3 rounded-xl border-2 border-slate-700 font-bold text-xs sm:text-sm text-slate-300 hover:border-emerald-500 hover:bg-slate-800 transition flex items-center justify-center gap-1.5 active:scale-95">
+                <span class="text-base">🌵</span>
+                <span>Dry</span>
+              </button>
+              <button id="btn-toggle-wet" type="button" class="dim-btn py-2.5 px-3 rounded-xl border-2 border-slate-700 font-bold text-xs sm:text-sm text-slate-300 hover:border-blue-500 hover:bg-slate-800 transition flex items-center justify-center gap-1.5 active:scale-95">
+                <span class="text-base">🌊</span>
+                <span>Wet</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Dimension 2: Static vs Dynamic -->
+          <div class="bg-slate-950/80 p-3 sm:p-4 rounded-xl border border-slate-800 flex flex-col justify-between gap-2.5">
+            <div>
+              <span class="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded bg-amber-500/20 text-amber-400 flex items-center justify-center text-[11px] font-mono font-bold">2</span>
+                <span>Equity Volatility</span>
+              </span>
+              <p class="text-[10px] sm:text-xs text-slate-400 mt-0.5">Will turn/river cards shuffle who is in the lead?</p>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <button id="btn-toggle-static" type="button" class="dim-btn py-2.5 px-3 rounded-xl border-2 border-slate-700 font-bold text-xs sm:text-sm text-slate-300 hover:border-emerald-500 hover:bg-slate-800 transition flex items-center justify-center gap-1.5 active:scale-95">
+                <span class="text-base">🏛️</span>
+                <span>Static</span>
+              </button>
+              <button id="btn-toggle-dynamic" type="button" class="dim-btn py-2.5 px-3 rounded-xl border-2 border-slate-700 font-bold text-xs sm:text-sm text-slate-300 hover:border-amber-500 hover:bg-slate-800 transition flex items-center justify-center gap-1.5 active:scale-95">
+                <span class="text-base">⚡</span>
+                <span>Dynamic</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit row -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-1.5 border-t border-slate-800">
+          <div id="selection-status-indicator" class="text-[11px] sm:text-xs text-slate-400 font-medium">
+            <span id="selection-status-text">Pick both Draw Density &amp; Volatility</span>
+          </div>
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button id="btn-submit-answer" type="button" class="flex-1 sm:flex-initial py-2 sm:py-2.5 px-6 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold text-xs sm:text-sm shadow transition active:scale-95">
+              Check Answer
+            </button>
+            <button id="btn-next-drill-flop" type="button" class="py-2 sm:py-2.5 px-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition active:scale-95">
+              Skip
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULT FEEDBACK BANNER (Hidden until checked) -->
+      <div id="feedback-banner" class="hidden rounded-2xl p-4 border flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl">
+        <div class="flex items-center gap-3">
+          <div id="feedback-icon" class="w-10 h-10 rounded-xl flex items-center justify-center text-xl font-bold shrink-0">
+            ✓
+          </div>
+          <div>
+            <div id="feedback-title" class="text-base sm:text-lg font-black text-white">Correct!</div>
+            <div id="feedback-subtitle" class="text-xs sm:text-sm text-slate-300">Board is <span class="font-bold underline text-white" id="feedback-correct-quadrant-text">Dry &amp; Static</span>.</div>
+          </div>
+        </div>
+        <button id="btn-next-flop-after-feedback" type="button" class="w-full sm:w-auto px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs sm:text-sm shadow transition active:scale-95">
+          Next Flop
+        </button>
+      </div>
+
+      <!-- BOARD ANALYSIS (Hidden until checked) -->
+      <div id="board-info-cards-section" class="hidden flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-300">Flop Analysis &amp; Strategy</span>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">GTO Breakdown</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <!-- Draw Density Card -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 flex flex-col gap-2 shadow">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                <span>🌵 Draw Density:</span>
+                <span id="card-eval-drywet-label" class="text-emerald-400 font-bold">Dry</span>
+              </span>
+              <span id="card-eval-drywet-score" class="text-[11px] font-mono-code px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">-- / 100</span>
+            </div>
+            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+              <div id="meter-drywet" class="bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-500 h-full rounded-full transition-all duration-300" style="width: 20%;"></div>
+            </div>
+            <ul id="card-eval-drywet-reasons" class="text-[11px] text-slate-300 flex flex-col gap-1.5 mt-1"></ul>
+          </div>
+
+          <!-- Volatility Card -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 flex flex-col gap-2 shadow">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                <span>⚡ Volatility:</span>
+                <span id="card-eval-statdyn-label" class="text-amber-400 font-bold">Static</span>
+              </span>
+              <span id="card-eval-statdyn-score" class="text-[11px] font-mono-code px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">-- / 100</span>
+            </div>
+            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+              <div id="meter-statdyn" class="bg-gradient-to-r from-blue-500 via-amber-500 to-rose-500 h-full rounded-full transition-all duration-300" style="width: 20%;"></div>
+            </div>
+            <ul id="card-eval-statdyn-reasons" class="text-[11px] text-slate-300 flex flex-col gap-1.5 mt-1"></ul>
+          </div>
+
+          <!-- GTO Strategy Card -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 flex flex-col gap-2 shadow">
+            <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <span>GTO Strategy</span>
+            </span>
+            <div class="flex flex-col gap-2 text-[11px]">
+              <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
+                <span class="text-slate-400 text-[10px] block font-semibold">Range Advantage</span>
+                <span id="gto-range-adv" class="text-slate-200">--</span>
+              </div>
+              <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
+                <span class="text-slate-400 text-[10px] block font-semibold">C-Bet Sizing</span>
+                <span id="gto-cbet-advice" class="text-slate-200">--</span>
+              </div>
+              <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
+                <span class="text-slate-400 text-[10px] block font-semibold">Turn Dynamics</span>
+                <span id="gto-turn-risk" class="text-slate-200">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- VIEW 5: STATS & REVIEW -->
-    <!-- ========================================== -->
-    <section id="view-stats" class="hidden flex-col gap-4 sm:gap-6">
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3" id="stats-summary"></div>
-      <div class="bg-slate-900/60 p-4 sm:p-6 rounded-2xl border border-slate-800">
-        <h2 class="text-lg font-extrabold text-white mb-3">Accuracy by texture</h2>
-        <div id="stats-breakdown" class="flex flex-col gap-3"></div>
-      </div>
-      <div class="bg-slate-900/60 p-4 sm:p-6 rounded-2xl border border-slate-800">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-lg font-extrabold text-white">Recent hands</h2>
-          <label class="text-xs text-slate-400 flex items-center gap-1.5"><input id="stats-mistakes-only" type="checkbox" class="accent-emerald-500"> Mistakes only</label>
+    <!-- VIEW 2: 10-FLOP CHALLENGE -->
+    <section id="view-challenge" class="hidden flex flex-col gap-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-white">🏆 10-Flop Rapid Challenge</h2>
+          <p class="text-xs text-slate-400">Classify 10 textures consecutively. Test your speed and GTO accuracy.</p>
         </div>
-        <div id="stats-history" class="flex flex-col gap-2"></div>
+        <div class="flex items-center gap-3">
+          <span id="challenge-progress-text" class="text-sm font-mono-code font-bold text-emerald-400">Flop 1/10</span>
+          <button id="challenge-restart-btn" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-200 text-xs font-bold active:bg-slate-700">Restart</button>
+        </div>
       </div>
-      <div class="flex justify-end">
-        <button id="stats-reset-btn" class="px-3 py-1.5 rounded-lg border border-red-900 text-red-300 hover:bg-red-950/50 text-xs font-semibold transition">Reset all stats</button>
+
+      <div class="relative overflow-hidden rounded-2xl border-2 sm:border-4 border-amber-950/80 poker-table-border poker-felt p-4 min-h-[170px] sm:min-h-[230px] flex items-center justify-center">
+        <div id="challenge-cards-container" class="flex items-center justify-center gap-2 sm:gap-4 max-w-full min-h-[120px] sm:min-h-[164px]"></div>
+      </div>
+
+      <div id="challenge-controls-box" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col gap-2.5">
+        <div class="text-center text-xs font-semibold text-slate-300">Select texture quadrant: <span class="hidden sm:inline text-slate-500">(keys 1–4)</span></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <button id="ch-btn-dry-static" type="button" class="p-3 rounded-xl border-2 border-slate-800 bg-slate-950 hover:border-emerald-500 text-left active:scale-[0.98]">
+            <div class="font-bold text-slate-100 text-sm">🌵🏛️ Dry &amp; Static</div>
+            <div class="text-[11px] text-slate-400">High cards / paired / rainbow.</div>
+          </button>
+          <button id="ch-btn-dry-dynamic" type="button" class="p-3 rounded-xl border-2 border-slate-800 bg-slate-950 hover:border-amber-500 text-left active:scale-[0.98]">
+            <div class="font-bold text-slate-100 text-sm">🌵⚡ Dry &amp; Dynamic</div>
+            <div class="text-[11px] text-slate-400">Low disconnected cards. Overcard risk.</div>
+          </button>
+          <button id="ch-btn-wet-static" type="button" class="p-3 rounded-xl border-2 border-slate-800 bg-slate-950 hover:border-blue-500 text-left active:scale-[0.98]">
+            <div class="font-bold text-slate-100 text-sm">🌊🏛️ Wet &amp; Static</div>
+            <div class="text-[11px] text-slate-400">High monotone / suited broadways.</div>
+          </button>
+          <button id="ch-btn-wet-dynamic" type="button" class="p-3 rounded-xl border-2 border-slate-800 bg-slate-950 hover:border-rose-500 text-left active:scale-[0.98]">
+            <div class="font-bold text-slate-100 text-sm">🌊⚡ Wet &amp; Dynamic</div>
+            <div class="text-[11px] text-slate-400">Connected &amp; suited. Draw heavy.</div>
+          </button>
+        </div>
+      </div>
+
+      <div id="challenge-scorecard" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col items-center text-center gap-4 shadow-xl">
+        <div id="challenge-grade-badge" class="w-20 h-20 rounded-full border-2 flex items-center justify-center text-3xl font-extrabold text-emerald-400">A+</div>
+        <div>
+          <h3 class="text-xl font-black text-white">Challenge Complete!</h3>
+          <p id="challenge-score-desc" class="text-xs text-slate-400 mt-0.5">Results</p>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full max-w-md">
+          <div class="p-2 bg-slate-950 rounded-xl border border-slate-800 text-center"><span class="text-[10px] text-slate-500 block">Dry/Static</span><span id="ch-stat-ds" class="font-bold text-xs text-slate-200">--</span></div>
+          <div class="p-2 bg-slate-950 rounded-xl border border-slate-800 text-center"><span class="text-[10px] text-slate-500 block">Dry/Dynamic</span><span id="ch-stat-dd" class="font-bold text-xs text-slate-200">--</span></div>
+          <div class="p-2 bg-slate-950 rounded-xl border border-slate-800 text-center"><span class="text-[10px] text-slate-500 block">Wet/Static</span><span id="ch-stat-ws" class="font-bold text-xs text-slate-200">--</span></div>
+          <div class="p-2 bg-slate-950 rounded-xl border border-slate-800 text-center"><span class="text-[10px] text-slate-500 block">Wet/Dynamic</span><span id="ch-stat-wd" class="font-bold text-xs text-slate-200">--</span></div>
+        </div>
+        <button id="challenge-play-again-btn" type="button" class="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs sm:text-sm active:scale-95">Play Another</button>
       </div>
     </section>
+
+    <!-- VIEW 3: CUSTOM FLOP LAB -->
+    <section id="view-lab" class="hidden flex flex-col gap-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-white">🔬 Custom Flop Lab &amp; Analyzer</h2>
+          <p class="text-xs text-slate-400">Pick any 3 cards to analyze.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="lab-random-btn" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold active:scale-95">🎲 Random</button>
+          <button id="lab-clear-btn" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold active:scale-95">Clear</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div class="lg:col-span-7 flex flex-col gap-4">
+          <div class="poker-felt poker-table-border rounded-2xl p-4 flex flex-col items-center justify-center min-h-[150px]">
+            <div id="lab-selected-cards" class="flex items-center gap-2 sm:gap-3"></div>
+            <div id="lab-select-instruction" class="text-xs text-emerald-400/80 mt-2 font-medium">Click cards below to build flop</div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-4 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">Card Selector</span>
+              <span class="text-xs text-slate-400 font-mono-code" id="lab-selected-count-badge">0 / 3</span>
+            </div>
+            <div class="flex flex-col gap-1.5 overflow-x-auto pb-1" id="deck-picker-container"></div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 flex flex-col gap-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-white uppercase tracking-wider">2D Texture Matrix</span>
+              <span id="lab-plot-quadrant-badge" class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Pick 3</span>
+            </div>
+            <div class="relative w-full aspect-square bg-slate-950 rounded-xl border border-slate-800 p-2 overflow-hidden flex items-center justify-center">
+              <div class="absolute inset-x-3 top-1/2 -translate-y-1/2 h-px bg-slate-700/80 border-t border-dashed border-slate-600"></div>
+              <div class="absolute inset-y-3 left-1/2 -translate-x-1/2 w-px bg-slate-700/80 border-l border-dashed border-slate-600"></div>
+              <div class="absolute top-2 left-2 text-[9px] font-bold text-slate-400">🌵🏛️ DRY/STATIC</div>
+              <div class="absolute top-2 right-2 text-[9px] font-bold text-slate-400 text-right">🌊🏛️ WET/STATIC</div>
+              <div class="absolute bottom-2 left-2 text-[9px] font-bold text-slate-400">🌵⚡ DRY/DYNAMIC</div>
+              <div class="absolute bottom-2 right-2 text-[9px] font-bold text-slate-400 text-right">🌊⚡ WET/DYNAMIC</div>
+              <div id="lab-plot-pin" class="absolute w-4 h-4 rounded-full bg-amber-400 border-2 border-white -translate-x-1/2 -translate-y-1/2 transition-all duration-300 pointer-events-none" style="left: 50%; top: 50%;"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="p-2 bg-slate-950 rounded-lg border border-slate-800"><span class="text-slate-400 block text-[10px]">Draw Score</span><span id="lab-metric-drywet" class="font-bold text-slate-200">--</span></div>
+              <div class="p-2 bg-slate-950 rounded-lg border border-slate-800"><span class="text-slate-400 block text-[10px]">Volatility</span><span id="lab-metric-statdyn" class="font-bold text-slate-200">--</span></div>
+            </div>
+            <div id="lab-gto-box" class="p-2.5 bg-slate-950 rounded-lg border border-slate-800 text-[11px] text-slate-300">
+              <span class="font-bold text-emerald-400 block">Solver Strategy:</span>
+              <p id="lab-gto-text" class="text-slate-300 mt-0.5">Select 3 cards to generate strategy.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: THEORY -->
+    <section id="view-theory" class="hidden flex flex-col gap-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 flex flex-col gap-2">
+        <h2 class="text-lg sm:text-2xl font-extrabold text-white">Why Static vs. Dynamic Shapes Post-Flop GTO</h2>
+        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          While "Wet vs. Dry" measures the count of immediate draws, "Static vs. Dynamic" dictates how much future turn and river cards will shuffle who has the winning equity.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-slate-900 border-2 border-emerald-500/30 rounded-2xl p-4 flex flex-col gap-2">
+          <div class="font-bold text-white text-sm sm:text-base">🌵🏛️ Dry &amp; Static</div>
+          <div class="font-mono-code text-xs text-emerald-300">A♠ 8♦ 3♣ &bull; K♥ 7♦ 2♣</div>
+          <p class="text-xs text-slate-300 mt-1">High card rainbow. Equities are locked. Small c-bets (25%-33%) work best.</p>
+          <button type="button" class="theory-drill-sample-btn mt-2 py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-emerald-600 hover:text-slate-950 text-slate-200 text-xs font-bold transition" data-sample="dry_static">Practice This Texture &rarr;</button>
+        </div>
+
+        <div class="bg-slate-900 border-2 border-amber-500/30 rounded-2xl p-4 flex flex-col gap-2">
+          <div class="font-bold text-white text-sm sm:text-base">🌵⚡ Dry &amp; Dynamic</div>
+          <div class="font-mono-code text-xs text-amber-300">7♠ 4♦ 2♣ &bull; 8♥ 3♦ 2♠</div>
+          <p class="text-xs text-slate-300 mt-1">Low disconnected cards. Up to 28 overcards can fall on the turn. Need medium-large sizing (50%-66%) for protection.</p>
+          <button type="button" class="theory-drill-sample-btn mt-2 py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-amber-600 hover:text-slate-950 text-slate-200 text-xs font-bold transition" data-sample="dry_dynamic">Practice This Texture &rarr;</button>
+        </div>
+
+        <div class="bg-slate-900 border-2 border-blue-500/30 rounded-2xl p-4 flex flex-col gap-2">
+          <div class="font-bold text-white text-sm sm:text-base">🌊🏛️ Wet &amp; Static</div>
+          <div class="font-mono-code text-xs text-blue-300">A♠ K♠ 8♠ &bull; K♥ Q♥ 4♥</div>
+          <p class="text-xs text-slate-300 mt-1">Monotone high cards. Flushes are already out, so the nut flush holder has insurmountable equity and few turns change that.</p>
+          <button type="button" class="theory-drill-sample-btn mt-2 py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-blue-600 hover:text-slate-950 text-slate-200 text-xs font-bold transition" data-sample="wet_static">Practice This Texture &rarr;</button>
+        </div>
+
+        <div class="bg-slate-900 border-2 border-rose-500/30 rounded-2xl p-4 flex flex-col gap-2">
+          <div class="font-bold text-white text-sm sm:text-base">🌊⚡ Wet &amp; Dynamic</div>
+          <div class="font-mono-code text-xs text-rose-300">J♥ T♥ 9♠ &bull; 8♠ 7♠ 6♦</div>
+          <p class="text-xs text-slate-300 mt-1">Connected suited cards. Heavy draw density and turbulence. Large c-bets (66%-80%+) or checks.</p>
+          <button type="button" class="theory-drill-sample-btn mt-2 py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-rose-600 hover:text-slate-950 text-slate-200 text-xs font-bold transition" data-sample="wet_dynamic">Practice This Texture &rarr;</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 5: STATS -->
+    <section id="view-stats" class="hidden flex flex-col gap-4">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3"><span class="text-[10px] text-slate-400 block font-medium">Total Hands</span><span id="stats-total-hands" class="text-2xl font-black text-white">0</span></div>
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3"><span class="text-[10px] text-slate-400 block font-medium">Accuracy</span><span id="stats-accuracy-pct" class="text-2xl font-black text-emerald-400">0%</span></div>
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3"><span class="text-[10px] text-slate-400 block font-medium">Best Streak</span><span id="stats-best-streak" class="text-2xl font-black text-amber-400">0</span></div>
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3"><span class="text-[10px] text-slate-400 block font-medium">Draw Accuracy</span><span id="stats-drywet-pct" class="text-2xl font-black text-blue-400">0%</span></div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs sm:text-sm font-bold text-white">Hand History</h3>
+          <button id="btn-reset-stats" type="button" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 text-[10px] font-bold active:bg-rose-900">Reset</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="border-b border-slate-800 text-slate-400">
+                <th class="py-2 px-2">Cards</th>
+                <th class="py-2 px-2">Answer</th>
+                <th class="py-2 px-2">Correct</th>
+                <th class="py-2 px-2">Result</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body" class="divide-y divide-slate-800/60 text-slate-200">
+              <tr><td colspan="4" class="py-6 text-center text-slate-500">No hands recorded yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
   </main>
 
-  <footer class="text-center text-[11px] text-slate-600 py-4">FlopMaster &bull; Board texture practice</footer>
-
   <script>
-  (function () {
-    'use strict';
-
-    // ---------- Constants ----------
-    const RANKS = ['2','3','4','5','6','7','8','9','T','J','Q','K','A'];
-    const SUITS = ['s','h','d','c'];
-    const SUIT_GLYPH = { s: '♠', h: '♥', d: '♦', c: '♣' };
-    const CATEGORIES = {
-      dry_static:  { label: 'Dry & Static',  short: 'Dry / Static',  color: 'slate',   key: '1' },
-      dry_dynamic: { label: 'Dry & Dynamic', short: 'Dry / Dynamic', color: 'sky',     key: '2' },
-      wet_static:  { label: 'Wet & Static',  short: 'Wet / Static',  color: 'violet',  key: '3' },
-      wet_dynamic: { label: 'Wet & Dynamic', short: 'Wet / Dynamic', color: 'rose',    key: '4' }
-    };
-    const CAT_KEYS = Object.keys(CATEGORIES);
-    const CAT_BTN_CLASS = {
-      slate:  'border-slate-600 hover:bg-slate-700/60',
-      sky:    'border-sky-700 hover:bg-sky-900/40',
-      violet: 'border-violet-700 hover:bg-violet-900/40',
-      rose:   'border-rose-700 hover:bg-rose-900/40'
-    };
-    const CAT_HINT = {
-      dry_static: 'Few draws, hand values rarely change (e.g. A♠7♦2♣)',
-      dry_dynamic: 'Few draws now, but turns shift equity (e.g. 7♠4♦2♣)',
-      wet_static: 'Draws/made hands already present, turn changes little (e.g. A♥K♥3♥)',
-      wet_dynamic: 'Lots of draws, nuts change often (e.g. 9♠8♠7♦)'
-    };
-
-    // ---------- Storage (safe) ----------
-    const store = {
-      get(key, fallback) {
-        try { const v = localStorage.getItem('flopmaster_' + key); return v === null ? fallback : JSON.parse(v); }
-        catch (e) { return fallback; }
-      },
-      set(key, value) {
-        try { localStorage.setItem('flopmaster_' + key, JSON.stringify(value)); } catch (e) { /* ignore */ }
-      }
-    };
-
-    const settings = Object.assign({ fourColor: true, sound: true }, store.get('settings', {}));
-    let stats = store.get('stats', null) || freshStats();
-    function freshStats() {
-      const byCat = {};
-      CAT_KEYS.forEach(k => { byCat[k] = { seen: 0, correct: 0 }; });
-      return { total: 0, correct: 0, streak: 0, bestStreak: 0, byCat, history: [], challengeBest: null };
-    }
-
-    // ---------- Helpers ----------
-    const $ = id => document.getElementById(id);
-    const rankVal = r => RANKS.indexOf(r) + 2; // 2..14
-    const cardId = c => c.rank + c.suit;
-    function fullDeck() {
-      const d = [];
-      RANKS.forEach(r => SUITS.forEach(s => d.push({ rank: r, suit: s })));
-      return d;
-    }
-    function randomFlop() {
-      const d = fullDeck();
-      for (let i = d.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [d[i], d[j]] = [d[j], d[i]]; }
-      return sortBoard(d.slice(0, 3));
-    }
-    function sortBoard(cards) { return cards.slice().sort((a, b) => rankVal(b.rank) - rankVal(a.rank)); }
-    function parseBoard(str) {
-      return sortBoard(str.match(/[2-9TJQKA][shdc]/g).map(t => ({ rank: t[0], suit: t[1] })));
-    }
-    function boardText(cards) { return cards.map(c => c.rank + SUIT_GLYPH[c.suit]).join(' '); }
-    function escapeHtml(s) { return String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); }
-
-    function suitColorClass(suit) {
-      if (suit === 'h') return 'text-red-600';
-      if (suit === 'd') return settings.fourColor ? 'text-blue-600' : 'text-red-600';
-      if (suit === 'c') return settings.fourColor ? 'text-emerald-700' : 'text-slate-900';
-      return 'text-slate-900';
-    }
-
-    // ---------- Texture analysis ----------
-    function analyzeBoard(cards) {
-      const suitCounts = {};
-      cards.forEach(c => { suitCounts[c.suit] = (suitCounts[c.suit] || 0) + 1; });
-      const maxSuit = Math.max(...Object.values(suitCounts));
-      const suitType = maxSuit === 3 ? 'monotone' : maxSuit === 2 ? 'twotone' : 'rainbow';
-
-      const vals = cards.map(c => rankVal(c.rank));
-      const distinct = [...new Set(vals)];
-      const pairType = distinct.length === 1 ? 'trips' : distinct.length === 2 ? 'paired' : 'unpaired';
-      const high = Math.max(...vals);
-
-      // Max number of distinct board ranks inside any 5-rank straight window (A plays high and low)
-      const withLowAce = distinct.concat(distinct.includes(14) ? [1] : []);
-      let maxInWindow = 0;
-      for (let lo = 1; lo <= 10; lo++) {
-        const n = new Set(withLowAce.filter(v => v >= lo && v <= lo + 4).map(v => v === 1 ? 14 : v)).size;
-        if (n > maxInWindow) maxInWindow = n;
-      }
-      // Closest gap between two board ranks (A counts as 1 too): 2 or less means real straight draws
-      const sortedVals = [...new Set(withLowAce)].sort((x, y) => x - y);
-      let minGap = 99;
-      for (let i = 1; i < sortedVals.length; i++) minGap = Math.min(minGap, sortedVals[i] - sortedVals[i - 1]);
-      const straightPts = maxInWindow >= 3 ? 3 : (maxInWindow === 2 && minGap <= 2) ? 1 : 0;
-
-      const wetReasons = [], dynReasons = [];
-      let wet = 0, dyn = 0;
-
-      if (suitType === 'monotone') { wet += 3; wetReasons.push(['Monotone: flushes already possible', 3]); }
-      else if (suitType === 'twotone') { wet += 2; wetReasons.push(['Two-tone: flush draws available', 2]); }
-      else wetReasons.push(['Rainbow: no flush draws', 0]);
-
-      if (straightPts === 3) { wet += 3; wetReasons.push(['Three cards in a straight window: straights/OESDs everywhere', 3]); }
-      else if (straightPts === 1) { wet += 1; wetReasons.push(['Two connected cards: some gutshots/OESDs', 1]); }
-      else wetReasons.push(['Disconnected ranks: few straight draws', 0]);
-
-      if (pairType !== 'unpaired') { wet -= 1; wetReasons.push([pairType === 'trips' ? 'Trips board: very few combos connect' : 'Paired board: fewer combos connect', -1]); }
-
-      if (suitType === 'twotone') { dyn += 2; dynReasons.push(['Flush can complete on the turn', 2]); }
-      else if (suitType === 'monotone') dynReasons.push(['Flush already out: a 4th suit card changes less', 0]);
-      else dynReasons.push(['Rainbow: no flush can arrive by the turn', 0]);
-
-      if (straightPts) { dyn += straightPts; dynReasons.push([straightPts === 3 ? 'Many turn cards complete straights' : 'Some turn cards add straight draws', straightPts]); }
-      else dynReasons.push(['Few turn cards bring straights', 0]);
-
-      if (high <= 9) { dyn += 3; dynReasons.push(['Low board: any overcard shifts equity', 3]); }
-      else if (high <= 11) { dyn += 1; dynReasons.push(['Middling high card: several overcards possible', 1]); }
-      else dynReasons.push(['High card ' + RANKS[high - 2] + ': few overcards left', 0]);
-
-      if (pairType === 'paired') { dyn -= 1; dynReasons.push(['Paired: hand rankings are locked in', -1]); }
-      if (pairType === 'trips') { dyn -= 2; dynReasons.push(['Trips: hand rankings are locked in', -2]); }
-
-      const isWet = wet >= 3, isDyn = dyn >= 3;
-      const category = (isWet ? 'wet' : 'dry') + '_' + (isDyn ? 'dynamic' : 'static');
-      return { category, wet, dyn, wetReasons, dynReasons, suitType, pairType, high };
-    }
-
-    function matchesFilter(analysis, filter) {
-      if (filter === 'all') return true;
-      if (CATEGORIES[filter]) return analysis.category === filter;
-      if (filter === 'monotone' || filter === 'twotone' || filter === 'rainbow') return analysis.suitType === filter;
-      if (filter === 'paired') return analysis.pairType !== 'unpaired';
-      return true;
-    }
-    function dealFiltered(filter) {
-      for (let i = 0; i < 5000; i++) {
-        const b = randomFlop();
-        if (matchesFilter(analyzeBoard(b), filter)) return b;
-      }
-      return randomFlop();
-    }
-
-    // ---------- Rendering ----------
-    function cardHtml(card, idx, animate) {
-      const color = suitColorClass(card.suit);
-      const g = SUIT_GLYPH[card.suit];
-      const rankLabel = card.rank === 'T' ? '10' : card.rank;
-      const anim = animate ? ' opacity-0 animate-card-' + (idx + 1) : '';
-      return '<div class="playing-card relative bg-white rounded-lg sm:rounded-xl shadow-xl shadow-black/50 border border-slate-300 w-[64px] h-[90px] sm:w-[96px] sm:h-[134px] md:w-[110px] md:h-[154px] select-none' + anim + '" data-card="' + cardId(card) + '">' +
-        '<div class="absolute top-1 left-1.5 sm:top-2 sm:left-2.5 leading-none text-center ' + color + '">' +
-          '<div class="font-extrabold text-base sm:text-2xl md:text-3xl">' + rankLabel + '</div>' +
-          '<div class="text-sm sm:text-xl">' + g + '</div>' +
-        '</div>' +
-        '<div class="absolute inset-0 flex items-center justify-center ' + color + ' text-3xl sm:text-5xl md:text-6xl">' + g + '</div>' +
-        '<div class="absolute bottom-1 right-1.5 sm:bottom-2 sm:right-2.5 leading-none text-center rotate-180 ' + color + '">' +
-          '<div class="font-extrabold text-base sm:text-2xl md:text-3xl">' + rankLabel + '</div>' +
-          '<div class="text-sm sm:text-xl">' + g + '</div>' +
-        '</div>' +
-      '</div>';
-    }
-    function emptyCardHtml() {
-      return '<div class="rounded-lg sm:rounded-xl border-2 border-dashed border-emerald-200/30 w-[64px] h-[90px] sm:w-[96px] sm:h-[134px] md:w-[110px] md:h-[154px] flex items-center justify-center text-emerald-200/40 text-2xl">?</div>';
-    }
-    function renderBoard(el, cards, animate) {
-      let html = '';
-      for (let i = 0; i < 3; i++) html += cards[i] ? cardHtml(cards[i], i, animate) : emptyCardHtml();
-      el.innerHTML = html;
-    }
-    function tagHtml(text) { return '<span class="px-2 py-0.5 rounded-full bg-black/30 text-emerald-100/80 border border-emerald-200/10">' + text + '</span>'; }
-
-    function answerButtonsHtml(prefix) {
-      return CAT_KEYS.map(k => {
-        const c = CATEGORIES[k];
-        return '<button data-answer="' + k + '" id="' + prefix + '-' + k + '" class="answer-btn text-left p-2.5 sm:p-3 rounded-xl border-2 bg-slate-800/60 ' + CAT_BTN_CLASS[c.color] + ' transition active:scale-[0.98] disabled:cursor-default">' +
-          '<div class="flex items-center justify-between"><span class="font-bold text-sm sm:text-base text-white">' + c.label + '</span><kbd class="hidden sm:inline text-[10px] px-1.5 rounded bg-slate-700 text-slate-300">' + c.key + '</kbd></div>' +
-          '<div class="text-[10px] sm:text-xs text-slate-400 mt-0.5 leading-snug">' + CAT_HINT[k] + '</div>' +
-        '</button>';
-      }).join('');
-    }
-
-    function reasonsHtml(title, reasons, total, verdict, colorCls) {
-      return '<div class="bg-slate-950/50 rounded-xl p-3 border border-slate-800">' +
-        '<div class="flex items-center justify-between mb-1.5"><span class="font-bold ' + colorCls + '">' + title + '</span><span class="text-xs text-slate-400">score <span class="font-mono-code text-slate-200">' + total + '</span> → <strong class="text-white">' + verdict + '</strong></span></div>' +
-        '<ul class="text-xs text-slate-300 space-y-1">' + reasons.map(r =>
-          '<li class="flex justify-between gap-3"><span>' + r[0] + '</span><span class="font-mono-code ' + (r[1] > 0 ? 'text-emerald-400' : r[1] < 0 ? 'text-red-400' : 'text-slate-500') + '">' + (r[1] > 0 ? '+' : '') + r[1] + '</span></li>').join('') +
-        '</ul></div>';
-    }
-    function analysisHtml(a) {
-      return '<div class="grid md:grid-cols-2 gap-3">' +
-        reasonsHtml('Dry vs Wet', a.wetReasons, a.wet, a.wet >= 3 ? 'Wet' : 'Dry', 'text-emerald-400') +
-        reasonsHtml('Static vs Dynamic', a.dynReasons, a.dyn, a.dyn >= 3 ? 'Dynamic' : 'Static', 'text-sky-400') +
-      '</div>';
-    }
-    function boardTags(a) {
-      const suit = { monotone: 'Monotone', twotone: 'Two-tone', rainbow: 'Rainbow' }[a.suitType];
-      const pair = { trips: 'Trips', paired: 'Paired', unpaired: 'Unpaired' }[a.pairType];
-      return [suit, pair, RANKS[a.high - 2] + '-high'].map(tagHtml).join('');
-    }
-
-    // ---------- Sound ----------
+    // WEB AUDIO SOUND EFFECTS
     let audioCtx = null;
-    function beep(kind) {
-      if (!settings.sound) return;
+    let soundEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) audioCtx = new AudioContextClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playDealSound() {
+      if (!soundEnabled) return;
       try {
-        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-        const notes = kind === 'good' ? [660, 880] : kind === 'bad' ? [220, 165] : [520];
-        notes.forEach((f, i) => {
-          const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-          o.type = kind === 'bad' ? 'square' : 'sine';
-          o.frequency.value = f;
-          const t = audioCtx.currentTime + i * 0.09;
-          g.gain.setValueAtTime(0.0001, t);
-          g.gain.exponentialRampToValueAtTime(0.12, t + 0.01);
-          g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
-          o.connect(g).connect(audioCtx.destination);
-          o.start(t); o.stop(t + 0.14);
+        initAudio();
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.08);
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } catch (e) {}
+    }
+
+    function playCorrectSound() {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        [523.25, 659.25, 783.99].forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+          gain.gain.setValueAtTime(0.08, now + idx * 0.06);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.2);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + idx * 0.06);
+          osc.stop(now + idx * 0.06 + 0.2);
         });
-      } catch (e) { /* audio unavailable */ }
+      } catch (e) {}
     }
 
-    // ---------- Settings UI ----------
-    function applySettings() {
-      ['', '-m'].forEach(sfx => {
-        const d = $('diamond-preview-icon' + sfx), c = $('club-preview-icon' + sfx);
-        if (d) d.className = settings.fourColor ? 'text-blue-400' : 'text-red-400';
-        if (c) c.className = settings.fourColor ? 'text-emerald-400' : 'text-slate-200';
-        const on = $('sound-on-svg' + sfx), off = $('sound-off-svg' + sfx);
-        if (on) on.classList.toggle('hidden', !settings.sound);
-        if (off) off.classList.toggle('hidden', settings.sound);
-      });
-      $('deck-color-mode-text').textContent = settings.fourColor ? '4-Color' : '2-Color';
-      store.set('settings', settings);
-    }
-    function rerenderAllBoards() {
-      if (drill.board) renderBoard($('drill-board'), drill.board, false);
-      if (challenge.boards.length && challenge.index < challenge.boards.length) renderBoard($('challenge-board'), challenge.boards[challenge.index], false);
-      renderLab();
-      renderTheory();
-      if (currentView === 'stats') renderStats();
-      if (!$('challenge-results').classList.contains('hidden')) renderChallengeReview();
-    }
-    function toggleDeckColor() { settings.fourColor = !settings.fourColor; applySettings(); rerenderAllBoards(); }
-    function toggleSound() { settings.sound = !settings.sound; applySettings(); if (settings.sound) beep('click'); }
-
-    // ---------- Navigation ----------
-    const VIEWS = ['drill', 'challenge', 'lab', 'theory', 'stats'];
-    let currentView = 'drill';
-    function showView(name) {
-      currentView = name;
-      VIEWS.forEach(v => {
-        const sec = $('view-' + v), btn = $('nav-' + v + '-btn');
-        const active = v === name;
-        sec.classList.toggle('hidden', !active);
-        sec.classList.toggle('flex', active);
-        btn.classList.toggle('bg-emerald-500', active);
-        btn.classList.toggle('text-slate-950', active);
-        btn.classList.toggle('shadow', active);
-        btn.classList.toggle('active-tab', active);
-        btn.classList.toggle('text-slate-300', !active);
-        btn.classList.toggle('hover:text-white', !active);
-        btn.classList.toggle('hover:bg-slate-800', !active);
-      });
-      if (name === 'stats') renderStats();
-      if (name === 'challenge') $('challenge-best').textContent = stats.challengeBest ? stats.challengeBest.score + '/10 in ' + stats.challengeBest.time.toFixed(1) + 's' : '--';
-      if (name !== 'challenge' && challenge.running) stopTimer();
-      if (name === 'challenge' && challenge.running) startTimer();
+    function playWrongSound() {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.exponentialRampToValueAtTime(120, now + 0.18);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.18);
+      } catch (e) {}
     }
 
-    // ---------- Drill mode ----------
-    const drill = { board: null, analysis: null, answered: false };
-    function updateDrillStats() {
-      $('stat-streak-val').textContent = stats.streak;
-      $('stat-accuracy-val').textContent = stats.total ? Math.round(100 * stats.correct / stats.total) + '%' : '--%';
-      $('stat-total-val').textContent = stats.total;
-    }
-    function dealDrill(board, silent) {
-      drill.board = board || dealFiltered($('drill-filter-select').value);
-      drill.analysis = analyzeBoard(drill.board);
-      drill.answered = false;
-      renderBoard($('drill-board'), drill.board, true);
-      $('drill-board-tags').innerHTML = '';
-      $('drill-answers').querySelectorAll('.answer-btn').forEach(b => {
-        b.disabled = false;
-        b.classList.remove('ring-2', 'ring-emerald-400', 'ring-red-500', 'opacity-40', 'bg-emerald-900/40', 'bg-red-900/40');
-      });
-      $('drill-feedback').classList.add('hidden');
-      if (!silent) beep('click');
-    }
-    function recordResult(board, analysis, answer, mode) {
-      const correct = answer === analysis.category;
-      stats.total++;
-      if (correct) { stats.correct++; stats.streak++; stats.bestStreak = Math.max(stats.bestStreak, stats.streak); }
-      else stats.streak = 0;
-      stats.byCat[analysis.category].seen++;
-      if (correct) stats.byCat[analysis.category].correct++;
-      stats.history.unshift({ board: board.map(cardId).join(''), answer, actual: analysis.category, correct, mode, t: Date.now() });
-      stats.history = stats.history.slice(0, 100);
-      store.set('stats', stats);
-      return correct;
-    }
-    function answerDrill(answer) {
-      if (drill.answered || !drill.board) return;
-      drill.answered = true;
-      const a = drill.analysis;
-      const correct = recordResult(drill.board, a, answer, 'drill');
-      beep(correct ? 'good' : 'bad');
-      updateDrillStats();
-      $('drill-answers').querySelectorAll('.answer-btn').forEach(b => {
-        b.disabled = true;
-        const k = b.dataset.answer;
-        if (k === a.category) b.classList.add('ring-2', 'ring-emerald-400', 'bg-emerald-900/40');
-        else if (k === answer) b.classList.add('ring-2', 'ring-red-500', 'bg-red-900/40');
-        else b.classList.add('opacity-40');
-      });
-      $('drill-board-tags').innerHTML = boardTags(a);
-      const fb = $('drill-feedback');
-      fb.innerHTML =
-        '<div class="flex flex-wrap items-center justify-between gap-3 mb-3">' +
-          '<div><div class="text-lg sm:text-xl font-extrabold ' + (correct ? 'text-emerald-400' : 'text-red-400') + '">' + (correct ? 'Correct!' : 'Not quite') + '</div>' +
-          '<div class="text-sm text-slate-300">' + escapeHtml(boardText(drill.board)) + ' is <strong class="text-white">' + CATEGORIES[a.category].label + '</strong>' + (correct ? '' : ' (you said ' + CATEGORIES[answer].label + ')') + '</div></div>' +
-          '<button id="feedback-next-btn" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-sm shadow transition active:scale-95">Next Flop →</button>' +
-        '</div>' + analysisHtml(a);
-      fb.classList.remove('hidden');
-      $('feedback-next-btn').addEventListener('click', () => dealDrill());
+    // POKER CONSTANTS
+    const RANKS = [14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
+    const RANK_LABELS = { 14: 'A', 13: 'K', 12: 'Q', 11: 'J', 10: 'T', 9: '9', 8: '8', 7: '7', 6: '6', 5: '5', 4: '4', 3: '3', 2: '2' };
+    const SUITS = ['s', 'h', 'd', 'c'];
+    const SUIT_SYMBOLS = { s: '♠', h: '♥', d: '♦', c: '♣' };
+    const SUIT_NAMES = { s: 'Spades', h: 'Hearts', d: 'Diamonds', c: 'Clubs' };
+
+    let isFourColorDeck = true;
+    try {
+      const savedPrefs = JSON.parse(localStorage.getItem('flopmaster_prefs') || '{}');
+      if (typeof savedPrefs.fourColor === 'boolean') isFourColorDeck = savedPrefs.fourColor;
+      if (typeof savedPrefs.sound === 'boolean') soundEnabled = savedPrefs.sound;
+    } catch (e) {}
+    function savePrefs() {
+      try { localStorage.setItem('flopmaster_prefs', JSON.stringify({ fourColor: isFourColorDeck, sound: soundEnabled })); } catch (e) {}
     }
 
-    // ---------- Challenge mode ----------
-    const challenge = { running: false, boards: [], answers: [], index: 0, start: 0, elapsed: 0, timerId: null };
-    function startChallenge() {
-      challenge.boards = Array.from({ length: 10 }, randomFlop);
-      challenge.answers = [];
-      challenge.index = 0;
-      challenge.elapsed = 0;
-      challenge.running = true;
-      $('challenge-intro').classList.add('hidden');
-      $('challenge-results').classList.add('hidden'); $('challenge-results').classList.remove('flex');
-      $('challenge-play').classList.remove('hidden'); $('challenge-play').classList.add('flex');
-      showChallengeBoard();
-      startTimer();
-    }
-    function startTimer() {
-      stopTimer();
-      challenge.start = performance.now() - challenge.elapsed * 1000;
-      challenge.timerId = setInterval(() => {
-        challenge.elapsed = (performance.now() - challenge.start) / 1000;
-        $('challenge-timer').textContent = challenge.elapsed.toFixed(1);
-      }, 100);
-    }
-    function stopTimer() {
-      if (challenge.timerId) {
-        clearInterval(challenge.timerId);
-        challenge.timerId = null;
-        challenge.elapsed = (performance.now() - challenge.start) / 1000;
-      }
-    }
-    function showChallengeBoard() {
-      $('challenge-progress').textContent = challenge.index + 1;
-      $('challenge-bar').style.width = (challenge.index * 10) + '%';
-      renderBoard($('challenge-board'), challenge.boards[challenge.index], true);
-    }
-    function answerChallenge(answer) {
-      if (!challenge.running) return;
-      const board = challenge.boards[challenge.index];
-      const a = analyzeBoard(board);
-      const correct = recordResult(board, a, answer, 'challenge');
-      challenge.answers.push(answer);
-      beep(correct ? 'good' : 'bad');
-      challenge.index++;
-      if (challenge.index >= 10) finishChallenge();
-      else showChallengeBoard();
-    }
-    function finishChallenge() {
-      stopTimer();
-      challenge.running = false;
-      $('challenge-bar').style.width = '100%';
-      const score = challenge.boards.filter((b, i) => analyzeBoard(b).category === challenge.answers[i]).length;
-      const time = challenge.elapsed;
-      const best = stats.challengeBest;
-      const isBest = !best || score > best.score || (score === best.score && time < best.time);
-      if (isBest) { stats.challengeBest = { score, time }; store.set('stats', stats); }
-      $('challenge-score').textContent = score;
-      $('challenge-final-time').textContent = time.toFixed(1);
-      $('challenge-new-best').classList.toggle('hidden', !isBest);
-      renderChallengeReview();
-      $('challenge-play').classList.add('hidden'); $('challenge-play').classList.remove('flex');
-      $('challenge-results').classList.remove('hidden'); $('challenge-results').classList.add('flex');
-      updateDrillStats();
-    }
-    function quitChallenge() {
-      stopTimer();
-      challenge.running = false;
-      challenge.boards = [];
-      $('challenge-play').classList.add('hidden'); $('challenge-play').classList.remove('flex');
-      $('challenge-results').classList.add('hidden'); $('challenge-results').classList.remove('flex');
-      $('challenge-intro').classList.remove('hidden');
-      showView('challenge');
-    }
-    function miniBoardHtml(cards) {
-      return cards.map(c => '<span class="inline-flex items-center justify-center w-8 h-10 rounded bg-white font-extrabold text-sm ' + suitColorClass(c.suit) + '">' + (c.rank === 'T' ? '10' : c.rank) + SUIT_GLYPH[c.suit] + '</span>').join('');
-    }
-    function renderChallengeReview() {
-      $('challenge-review').innerHTML = challenge.boards.map((b, i) => {
-        const a = analyzeBoard(b), ans = challenge.answers[i], ok = ans === a.category;
-        return '<button data-lab-board="' + b.map(cardId).join('') + '" class="flex items-center gap-3 p-2 rounded-xl border text-left hover:bg-slate-800/60 transition ' + (ok ? 'border-emerald-900' : 'border-red-900 bg-red-950/20') + '">' +
-          '<span class="text-xs w-5 text-slate-500">' + (i + 1) + '</span><span class="flex gap-1">' + miniBoardHtml(b) + '</span>' +
-          '<span class="text-xs sm:text-sm flex-1">' + (ok ? '<span class="text-emerald-400 font-bold">✓</span> ' + CATEGORIES[a.category].short : '<span class="text-red-400 font-bold">✗</span> ' + CATEGORIES[ans].short + ' → <strong class="text-white">' + CATEGORIES[a.category].short + '</strong>') + '</span>' +
-          '<span class="text-[10px] text-slate-500 hidden sm:inline">open in lab</span>' +
-        '</button>';
-      }).join('');
-    }
-
-    // ---------- Custom lab ----------
-    let labSelection = [];
-    function renderLab() {
-      const picker = $('lab-picker');
-      const selectedIds = labSelection.map(cardId);
-      picker.innerHTML = SUITS.map(s =>
-        '<div class="flex gap-1 min-w-max">' + RANKS.slice().reverse().map(r => {
-          const id = r + s, sel = selectedIds.includes(id);
-          return '<button data-pick="' + id + '" class="w-8 h-10 sm:w-10 sm:h-12 rounded-md font-extrabold text-xs sm:text-sm transition ' +
-            (sel ? 'bg-emerald-400 ring-2 ring-emerald-200 ' : 'bg-white hover:bg-amber-100 ') + suitColorClass(s) + '">' + (r === 'T' ? '10' : r) + SUIT_GLYPH[s] + '</button>';
-        }).join('') + '</div>'
-      ).join('');
-      renderBoard($('lab-board'), sortBoard(labSelection), false);
-      const full = labSelection.length === 3;
-      $('lab-drill-btn').disabled = !full;
-      if (full) {
-        const a = analyzeBoard(labSelection);
-        $('lab-analysis').innerHTML =
-          '<div class="flex flex-wrap items-center gap-2 mb-3"><span class="text-white font-bold">' + escapeHtml(boardText(sortBoard(labSelection))) + '</span>' +
-          '<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-xs font-bold">' + CATEGORIES[a.category].label + '</span>' +
-          '<span class="flex gap-1.5 text-[10px]">' + boardTags(a) + '</span></div>' + analysisHtml(a);
+    function getCardColors(suit) {
+      if (isFourColorDeck) {
+        if (suit === 's') return { text: '#0f172a', bg: '#ffffff', border: '#cbd5e1', suitColor: '#0f172a' };
+        if (suit === 'h') return { text: '#dc2626', bg: '#ffffff', border: '#fecaca', suitColor: '#dc2626' };
+        if (suit === 'd') return { text: '#2563eb', bg: '#ffffff', border: '#bfdbfe', suitColor: '#2563eb' };
+        if (suit === 'c') return { text: '#15803d', bg: '#ffffff', border: '#bbf7d0', suitColor: '#15803d' };
       } else {
-        $('lab-analysis').innerHTML = '<span class="text-slate-400">Select ' + (3 - labSelection.length) + ' more card' + (3 - labSelection.length === 1 ? '' : 's') + ' to see the analysis.</span>';
+        if (suit === 's' || suit === 'c') {
+          return { text: '#0f172a', bg: '#ffffff', border: '#cbd5e1', suitColor: '#0f172a' };
+        } else {
+          return { text: '#dc2626', bg: '#ffffff', border: '#fecaca', suitColor: '#dc2626' };
+        }
+      }
+      return { text: '#0f172a', bg: '#ffffff', border: '#cbd5e1', suitColor: '#0f172a' };
+    }
+
+    // PLAYING CARD TEMPLATE (explicit styles to guarantee rendering in iframe preview)
+    function createCardHTML(card, animClass = '', size = 'normal') {
+      const colors = getCardColors(card.suit);
+      const symbol = SUIT_SYMBOLS[card.suit];
+      const rankLabel = RANK_LABELS[card.rank];
+      const cardClass = size === 'lab-slot' ? 'poker-card-lab' : 'poker-card';
+
+      return `
+        <div class="${cardClass} select-none shadow-xl flex flex-col justify-between relative overflow-hidden font-bold ${animClass}"
+             style="background-color: ${colors.bg}; color: ${colors.text}; border: 2px solid ${colors.border}; padding: 8px;">
+          <!-- Top Left Rank & Suit -->
+          <div class="flex flex-col items-center leading-none self-start">
+            <span class="tracking-tighter font-black text-sm sm:text-base">${rankLabel}</span>
+            <span class="text-xs sm:text-sm font-bold" style="color: ${colors.suitColor}">${symbol}</span>
+          </div>
+          <!-- Center Watermark Symbol -->
+          <div class="absolute inset-0 flex items-center justify-center opacity-80 pointer-events-none">
+            <span class="text-4xl sm:text-6xl font-bold" style="color: ${colors.suitColor}">${symbol}</span>
+          </div>
+          <!-- Bottom Right Inverted Rank & Suit -->
+          <div class="flex flex-col items-center leading-none self-end rotate-180">
+            <span class="tracking-tighter font-black text-sm sm:text-base">${rankLabel}</span>
+            <span class="text-xs sm:text-sm font-bold" style="color: ${colors.suitColor}">${symbol}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function evaluateFlop(cards) {
+      if (!cards || cards.length !== 3) return null;
+
+      const ranks = cards.map(c => c.rank).sort((a, b) => b - a);
+      const suits = cards.map(c => c.suit);
+
+      const suitCounts = {};
+      suits.forEach(s => suitCounts[s] = (suitCounts[s] || 0) + 1);
+      const maxSuitCount = Math.max(...Object.values(suitCounts));
+
+      const rankCounts = {};
+      ranks.forEach(r => rankCounts[r] = (rankCounts[r] || 0) + 1);
+      const maxRankCount = Math.max(...Object.values(rankCounts));
+
+      const isMonotone = maxSuitCount === 3;
+      const isTwoTone = maxSuitCount === 2;
+      const isRainbow = maxSuitCount === 1;
+
+      const isTrips = maxRankCount === 3;
+      const isPaired = maxRankCount === 2;
+
+      const uniqueRanks = Array.from(new Set(ranks)).sort((a, b) => b - a);
+      const hasAce = uniqueRanks.includes(14);
+      const wheelRanks = hasAce ? uniqueRanks.map(r => r === 14 ? 1 : r).sort((a, b) => b - a) : null;
+
+      function checkStraightCoord(rList) {
+        if (rList.length < 2) return { score: 0, label: 'Trips (No Straight Draws)' };
+        if (rList.length === 3) {
+          const span = rList[0] - rList[2];
+          if (span === 2) return { score: 42, label: '3-Connected (Open-ended/Made)' };
+          if (span === 3) return { score: 32, label: '3-Connected (1-gap: Gutshots & OESDs)' };
+          if (span === 4) return { score: 22, label: '3-Card Span (2-gap: Gutshots)' };
+          const minDiff = Math.min(rList[0] - rList[1], rList[1] - rList[2]);
+          if (minDiff === 1) return { score: 14, label: '2-Connected (e.g. 8-7)' };
+          if (minDiff === 2) return { score: 8, label: '2-Connected with 1-gap' };
+          return { score: 0, label: 'Completely Disconnected' };
+        } else if (rList.length === 2) {
+          const diff = rList[0] - rList[1];
+          if (diff === 1) return { score: 10, label: 'Paired with Connector' };
+          if (diff === 2) return { score: 5, label: 'Paired with 1-gap' };
+          return { score: 0, label: 'Paired Disconnected' };
+        }
+        return { score: 0, label: 'No Coordination' };
+      }
+
+      let straightCoord = checkStraightCoord(uniqueRanks);
+      if (wheelRanks) {
+        const wheelCoord = checkStraightCoord(wheelRanks);
+        if (wheelCoord.score > straightCoord.score) straightCoord = wheelCoord;
+      }
+
+      const broadwayCount = ranks.filter(r => r >= 10).length;
+      const topRank = ranks[0];
+      const overcardsCount = (14 - topRank) * 4;
+      const overcardPct = Math.round((overcardsCount / 49) * 100);
+
+      // Wetness (Draw Density)
+      let wetScore = 0;
+      const wetReasons = [];
+
+      if (isMonotone) {
+        wetScore += 44;
+        wetReasons.push(`<strong>Monotone:</strong> All 3 cards are ${SUIT_NAMES[suits[0]]}. Flushes possible; 1-card flush draws have 9 outs.`);
+      } else if (isTwoTone) {
+        wetScore += 24;
+        const flushSuit = Object.keys(suitCounts).find(s => suitCounts[s] === 2);
+        wetReasons.push(`<strong>Two-Tone:</strong> 2 cards of ${SUIT_NAMES[flushSuit]}. 9-out flush draws available.`);
+      } else {
+        wetReasons.push(`<strong>Rainbow:</strong> 3 distinct suits. No immediate flush draws.`);
+      }
+
+      wetScore += straightCoord.score;
+      wetReasons.push(`<strong>Straight Potential:</strong> ${straightCoord.label}.`);
+
+      if (broadwayCount >= 2 && !isTrips) {
+        wetScore += 10;
+        wetReasons.push(`<strong>Broadways:</strong> ${broadwayCount} broadways connecting with standard ranges.`);
+      }
+
+      if (isTrips) {
+        wetScore = 5;
+        wetReasons.push(`<strong>Trips:</strong> Straights and flushes blocked. Bone dry.`);
+      } else if (isPaired) {
+        wetScore = Math.round(wetScore * 0.55);
+        wetReasons.push(`<strong>Paired Board:</strong> Full house threats diminish flush and straight value.`);
+      }
+
+      wetScore = Math.max(2, Math.min(98, wetScore));
+      const isWet = wetScore >= 38;
+
+      // Volatility (Static vs Dynamic)
+      let dynScore = 0;
+      const dynReasons = [];
+
+      if (topRank === 14) {
+        dynScore += 4;
+        dynReasons.push(`<strong>Ace-High:</strong> 0 cards can demote top pair. Equities are rock static.`);
+      } else if (topRank === 13) {
+        dynScore += 14;
+        dynReasons.push(`<strong>King-High:</strong> Only 4 Aces (${overcardPct}% of turn cards) are overcards. High equity stability.`);
+      } else if (topRank === 12) {
+        dynScore += 26;
+        dynReasons.push(`<strong>Queen-High:</strong> 8 overcards (Aces and Kings) exist.`);
+      } else if (topRank === 11) {
+        dynScore += 42;
+        dynReasons.push(`<strong>Jack-High:</strong> 12 overcards exist (~24% of turn cards).`);
+      } else if (topRank === 10) {
+        dynScore += 54;
+        dynReasons.push(`<strong>Ten-High:</strong> 16 overcards exist (~33% of turn cards).`);
+      } else {
+        dynScore += (64 + (9 - topRank) * 4);
+        dynReasons.push(`<strong>Low Board (${RANK_LABELS[topRank]}-High):</strong> <strong>${overcardsCount} turn cards (${overcardPct}%)</strong> are overcards! Highly dynamic.`);
+      }
+
+      if (isMonotone) {
+        dynScore += (topRank >= 13 ? 8 : 24);
+      } else if (isTwoTone) {
+        dynScore += 16;
+      }
+
+      if (straightCoord.score >= 32) dynScore += 24;
+      else if (straightCoord.score >= 14) dynScore += 12;
+
+      if (isTrips) dynScore = 6;
+      else if (isPaired) dynScore = Math.max(8, dynScore - 26);
+
+      dynScore = Math.max(3, Math.min(98, dynScore));
+      const isDynamic = dynScore >= 48;
+
+      const quadrantKey = (!isWet && !isDynamic) ? 'dry_static' :
+                          (!isWet && isDynamic) ? 'dry_dynamic' :
+                          (isWet && !isDynamic) ? 'wet_static' : 'wet_dynamic';
+
+      const quadrantTitles = {
+        dry_static: 'Dry & Static',
+        dry_dynamic: 'Dry & Dynamic',
+        wet_static: 'Wet & Static',
+        wet_dynamic: 'Wet & Dynamic'
+      };
+
+      let gtoRange = '', gtoCbet = '', gtoTurn = '';
+      if (quadrantKey === 'dry_static') {
+        gtoRange = 'Preflop raiser holds massive range and nut advantage (AA, KK, AK hit hard).';
+        gtoCbet = 'Small bets (25%-33% pot) with high frequency (70%-100%). Cheap folds.';
+        gtoTurn = 'Equities are robust and polarized. Turn cards rarely change who is winning.';
+      } else if (quadrantKey === 'dry_dynamic') {
+        gtoRange = 'Caller connects well with pairs and overcard floats on low disconnected boards.';
+        gtoCbet = 'Medium-to-large (50%-66% pot) to deny overcard equity, or check back.';
+        gtoTurn = 'Overcard danger. More than half the deck can demote a flopped top pair.';
+      } else if (quadrantKey === 'wet_static') {
+        gtoRange = 'Equities skewed to nut flush or blocker holders. Dominant made hands.';
+        gtoCbet = 'Small sizing (25%-33%) or check. Large bets only isolate monsters.';
+        gtoTurn = 'Turn cards rarely create new leaders unless board pairs or 4th flush card lands.';
+      } else {
+        gtoRange = 'Preflop caller connects heavily (suited connectors, two-pair, combo draws).';
+        gtoCbet = 'Polarized: Check for pot control or bet large (66%-80%+) to charge draws.';
+        gtoTurn = 'Maximum volatility. Slow-playing sets or two-pair here is dangerous.';
+      }
+
+      return {
+        cards, ranks, suits,
+        isRainbow, isTwoTone, isMonotone, isTrips, isPaired,
+        topRank, overcardsCount, overcardPct,
+        wetScore, isWet, wetLabel: isWet ? 'Wet' : 'Dry', wetReasons,
+        dynScore, isDynamic, dynLabel: isDynamic ? 'Dynamic' : 'Static', dynReasons,
+        quadrantKey, quadrantTitle: quadrantTitles[quadrantKey],
+        gtoRange, gtoCbet, gtoTurn
+      };
+    }
+
+    function sortCards(cards) {
+      return [...cards].sort((a, b) => b.rank - a.rank);
+    }
+
+    function generateFullDeck() {
+      const deck = [];
+      for (const r of RANKS) {
+        for (const s of SUITS) {
+          deck.push({ rank: r, suit: s });
+        }
+      }
+      return deck;
+    }
+
+    function generateRandomFlop(filter = 'all') {
+      const deck = generateFullDeck();
+      for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+      }
+
+      for (let attempt = 0; attempt < 800; attempt++) {
+        const i1 = Math.floor(Math.random() * 52);
+        let i2 = Math.floor(Math.random() * 51);
+        if (i2 >= i1) i2++;
+        let i3 = Math.floor(Math.random() * 50);
+        const indices = [i1, i2].sort((a,b) => a - b);
+        if (i3 >= indices[0]) i3++;
+        if (i3 >= indices[1]) i3++;
+
+        const candidate = [deck[i1], deck[i2], deck[i3]];
+        const evalRes = evaluateFlop(candidate);
+
+        if (filter === 'all') return candidate;
+        if (filter === evalRes.quadrantKey) return candidate;
+        if (filter === 'monotone' && evalRes.isMonotone) return candidate;
+        if (filter === 'twotone' && evalRes.isTwoTone) return candidate;
+        if (filter === 'rainbow' && evalRes.isRainbow) return candidate;
+        if (filter === 'paired' && evalRes.isPaired) return candidate;
+      }
+      return [deck[0], deck[1], deck[2]];
+    }
+
+    const CURATED_SAMPLES = {
+      dry_static: [ { rank: 14, suit: 's' }, { rank: 8, suit: 'd' }, { rank: 3, suit: 'c' } ],
+      dry_dynamic: [ { rank: 7, suit: 's' }, { rank: 4, suit: 'd' }, { rank: 2, suit: 'c' } ],
+      wet_static: [ { rank: 14, suit: 's' }, { rank: 13, suit: 's' }, { rank: 8, suit: 's' } ],
+      wet_dynamic: [ { rank: 11, suit: 'h' }, { rank: 10, suit: 'h' }, { rank: 9, suit: 's' } ]
+    };
+
+    const STORAGE_KEY = 'flopmaster_poker_stats_v3';
+    let appState = {
+      streak: 0,
+      bestStreak: 0,
+      totalDealt: 0,
+      correctCount: 0,
+      dryWetCorrect: 0,
+      statDynCorrect: 0,
+      history: []
+    };
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) appState = { ...appState, ...JSON.parse(raw) };
+      } catch (e) {}
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {}
+    }
+
+    let currentDrillCards = [];
+    let currentDrillEval = null;
+    let drillAnswerState = { dryWet: null, statDyn: null };
+    let drillAnswered = false;
+
+    function renderFlopCards(cards, containerId, anim = true) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      container.innerHTML = cards.map((c, idx) => {
+        const animClass = anim ? `animate-card-${idx + 1}` : '';
+        return createCardHTML(c, animClass, 'normal');
+      }).join('');
+    }
+
+    function updateBoardInfoCards(evalRes) {
+      if (!evalRes) return;
+      document.getElementById('card-eval-drywet-label').textContent = evalRes.wetLabel;
+      document.getElementById('card-eval-drywet-score').textContent = `${evalRes.wetScore} / 100`;
+      document.getElementById('meter-drywet').style.width = `${evalRes.wetScore}%`;
+      document.getElementById('card-eval-drywet-reasons').innerHTML = evalRes.wetReasons.map(r => `<li>• ${r}</li>`).join('');
+
+      document.getElementById('card-eval-statdyn-label').textContent = evalRes.dynLabel;
+      document.getElementById('card-eval-statdyn-score').textContent = `${evalRes.dynScore} / 100`;
+      document.getElementById('meter-statdyn').style.width = `${evalRes.dynScore}%`;
+      document.getElementById('card-eval-statdyn-reasons').innerHTML = evalRes.dynReasons.map(r => `<li>• ${r}</li>`).join('');
+
+      document.getElementById('gto-range-adv').textContent = evalRes.gtoRange;
+      document.getElementById('gto-cbet-advice').textContent = evalRes.gtoCbet;
+      document.getElementById('gto-turn-risk').textContent = evalRes.gtoTurn;
+    }
+
+    function dealNewDrillFlop(customCards = null) {
+      drillAnswered = false;
+      drillAnswerState = { dryWet: null, statDyn: null };
+
+      const filterEl = document.getElementById('drill-filter-select');
+      const filter = filterEl ? filterEl.value : 'all';
+      currentDrillCards = sortCards(customCards || generateRandomFlop(filter));
+      currentDrillEval = evaluateFlop(currentDrillCards);
+
+      playDealSound();
+      renderFlopCards(currentDrillCards, 'flop-cards-container', true);
+
+      const suitednessTag = currentDrillEval.isMonotone ? '🌊 Monotone' : currentDrillEval.isTwoTone ? 'Two-Tone' : '🌵 Rainbow';
+      const pairTag = currentDrillEval.isTrips ? 'Trips' : currentDrillEval.isPaired ? 'Paired' : 'Unpaired';
+      const highCardTag = `${RANK_LABELS[currentDrillEval.topRank]}-High`;
+
+      const tagsEl = document.getElementById('flop-quick-tags');
+      if (tagsEl) {
+        tagsEl.innerHTML = `
+          <span class="px-2 py-0.5 rounded-full bg-slate-900/90 border border-slate-700 text-[10px] sm:text-xs font-semibold text-slate-300">${suitednessTag}</span>
+          <span class="px-2 py-0.5 rounded-full bg-slate-900/90 border border-slate-700 text-[10px] sm:text-xs font-semibold text-slate-300">${pairTag}</span>
+          <span class="px-2 py-0.5 rounded-full bg-slate-900/90 border border-slate-700 text-[10px] sm:text-xs font-semibold text-slate-300">${highCardTag}</span>
+        `;
+      }
+
+      updateSelectionUI();
+      const submitBtn = document.getElementById('btn-submit-answer');
+      if (submitBtn) submitBtn.textContent = 'Check Answer';
+      const skipBtn = document.getElementById('btn-next-drill-flop');
+      if (skipBtn) skipBtn.classList.remove('hidden');
+      const banner = document.getElementById('feedback-banner');
+      if (banner) banner.classList.add('hidden');
+      const infoSection = document.getElementById('board-info-cards-section');
+      if (infoSection) infoSection.classList.add('hidden');
+      const statusText = document.getElementById('selection-status-text');
+      if (statusText) statusText.textContent = 'Pick Draw Density & Volatility';
+    }
+
+    function setDrillSelection(dryWet, statDyn) {
+      if (drillAnswered) return;
+      if (dryWet !== undefined) drillAnswerState.dryWet = dryWet;
+      if (statDyn !== undefined) drillAnswerState.statDyn = statDyn;
+      updateSelectionUI();
+    }
+
+    function updateSelectionUI() {
+      const dryBtn = document.getElementById('btn-toggle-dry');
+      const wetBtn = document.getElementById('btn-toggle-wet');
+      const staticBtn = document.getElementById('btn-toggle-static');
+      const dynamicBtn = document.getElementById('btn-toggle-dynamic');
+
+      const activeDry = 'dim-btn py-2.5 px-3 rounded-xl border-2 border-emerald-500 bg-emerald-950/70 font-bold text-xs sm:text-sm text-emerald-300 shadow flex items-center justify-center gap-1.5 transition';
+      const activeWet = 'dim-btn py-2.5 px-3 rounded-xl border-2 border-blue-500 bg-blue-950/70 font-bold text-xs sm:text-sm text-blue-300 shadow flex items-center justify-center gap-1.5 transition';
+      const activeStatic = 'dim-btn py-2.5 px-3 rounded-xl border-2 border-emerald-500 bg-emerald-950/70 font-bold text-xs sm:text-sm text-emerald-300 shadow flex items-center justify-center gap-1.5 transition';
+      const activeDynamic = 'dim-btn py-2.5 px-3 rounded-xl border-2 border-amber-500 bg-amber-950/70 font-bold text-xs sm:text-sm text-amber-300 shadow flex items-center justify-center gap-1.5 transition';
+      const inactive = 'dim-btn py-2.5 px-3 rounded-xl border-2 border-slate-700 font-bold text-xs sm:text-sm text-slate-300 hover:border-slate-500 transition flex items-center justify-center gap-1.5';
+
+      if (dryBtn) dryBtn.className = (drillAnswerState.dryWet === 'Dry') ? activeDry : inactive;
+      if (wetBtn) wetBtn.className = (drillAnswerState.dryWet === 'Wet') ? activeWet : inactive;
+      if (staticBtn) staticBtn.className = (drillAnswerState.statDyn === 'Static') ? activeStatic : inactive;
+      if (dynamicBtn) dynamicBtn.className = (drillAnswerState.statDyn === 'Dynamic') ? activeDynamic : inactive;
+
+      const status = document.getElementById('selection-status-text');
+      if (!status) return;
+
+      if (drillAnswerState.dryWet && drillAnswerState.statDyn) {
+        status.innerHTML = `<span class="text-white font-bold">${drillAnswerState.dryWet}</span> &amp; <span class="text-white font-bold">${drillAnswerState.statDyn}</span> selected`;
+      } else if (drillAnswerState.dryWet) {
+        status.innerHTML = `<span class="text-white font-bold">${drillAnswerState.dryWet}</span> selected &bull; Pick Dimension 2`;
+      } else if (drillAnswerState.statDyn) {
+        status.innerHTML = `<span class="text-white font-bold">${drillAnswerState.statDyn}</span> selected &bull; Pick Dimension 1`;
+      } else {
+        status.textContent = 'Pick both Draw Density & Volatility';
       }
     }
-    function togglePick(id) {
-      const idx = labSelection.findIndex(c => cardId(c) === id);
-      if (idx >= 0) labSelection.splice(idx, 1);
-      else if (labSelection.length < 3) labSelection.push({ rank: id[0], suit: id[1] });
-      else { labSelection.shift(); labSelection.push({ rank: id[0], suit: id[1] }); }
-      renderLab();
-    }
-    function openInLab(boardStr) {
-      labSelection = parseBoard(boardStr);
-      renderLab();
-      showView('lab');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    function submitDrillAnswer() {
+      if (drillAnswered) {
+        dealNewDrillFlop();
+        return;
+      }
+
+      if (!drillAnswerState.dryWet || !drillAnswerState.statDyn) {
+        const status = document.getElementById('selection-status-text');
+        if (status) status.innerHTML = '<span class="text-rose-400 font-bold">Pick both dimensions first!</span>';
+        return;
+      }
+
+      drillAnswered = true;
+      const isDryWetCorrect = (drillAnswerState.dryWet === currentDrillEval.wetLabel);
+      const isStatDynCorrect = (drillAnswerState.statDyn === currentDrillEval.dynLabel);
+      const isFullyCorrect = isDryWetCorrect && isStatDynCorrect;
+
+      appState.totalDealt++;
+      if (isDryWetCorrect) appState.dryWetCorrect++;
+      if (isStatDynCorrect) appState.statDynCorrect++;
+
+      if (isFullyCorrect) {
+        appState.correctCount++;
+        appState.streak++;
+        if (appState.streak > appState.bestStreak) appState.bestStreak = appState.streak;
+        playCorrectSound();
+      } else {
+        appState.streak = 0;
+        playWrongSound();
+      }
+
+      appState.history.unshift({
+        cards: [...currentDrillCards],
+        userAnswer: `${drillAnswerState.dryWet} & ${drillAnswerState.statDyn}`,
+        correctAnswer: currentDrillEval.quadrantTitle,
+        isCorrect: isFullyCorrect
+      });
+      if (appState.history.length > 30) appState.history.pop();
+
+      saveState();
+      updateStatsUI();
+
+      const submitBtn = document.getElementById('btn-submit-answer');
+      if (submitBtn) submitBtn.textContent = 'Next Flop';
+      const skipBtn = document.getElementById('btn-next-drill-flop');
+      if (skipBtn) skipBtn.classList.add('hidden');
+
+      const banner = document.getElementById('feedback-banner');
+      const icon = document.getElementById('feedback-icon');
+      const title = document.getElementById('feedback-title');
+      const subtitle = document.getElementById('feedback-subtitle');
+      const quadText = document.getElementById('feedback-correct-quadrant-text');
+      if (quadText) quadText.textContent = currentDrillEval.quadrantTitle;
+
+      if (banner) {
+        banner.classList.remove('hidden');
+        if (isFullyCorrect) {
+          banner.className = 'rounded-2xl p-4 border border-emerald-500/40 bg-emerald-950/40 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl';
+          if (icon) {
+            icon.className = 'w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl font-bold border border-emerald-500/40 shrink-0';
+            icon.textContent = '✓';
+          }
+          if (title) {
+            title.className = 'text-base sm:text-lg font-black text-emerald-300';
+            title.textContent = 'Correct Classification!';
+          }
+          if (subtitle) subtitle.innerHTML = `Identified as <span class="font-bold underline text-white">${currentDrillEval.quadrantTitle}</span>.`;
+        } else {
+          banner.className = 'rounded-2xl p-4 border border-rose-500/40 bg-rose-950/40 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl';
+          if (icon) {
+            icon.className = 'w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-xl font-bold border border-rose-500/40 shrink-0';
+            icon.textContent = '✗';
+          }
+          if (title) {
+            title.className = 'text-base sm:text-lg font-black text-rose-300';
+            title.textContent = 'Not Quite!';
+          }
+          if (subtitle) subtitle.innerHTML = `Correct answer: <span class="font-bold underline text-white">${currentDrillEval.quadrantTitle}</span>.`;
+        }
+      }
+
+      const infoSection = document.getElementById('board-info-cards-section');
+      if (infoSection) {
+        infoSection.classList.remove('hidden');
+        updateBoardInfoCards(currentDrillEval);
+      }
     }
 
-    // ---------- Theory ----------
-    const THEORY_EXAMPLES = {
-      dry_static: ['As7d2c', 'Kh8s3d', 'QcQd4h', 'AdKc2h'],
-      dry_dynamic: ['7s4d2c', '9h5c2d', '8s5d2c', '8c3h2s'],
-      wet_static: ['AhKh3h', 'KsQs5s', 'QdJd2d', 'AcTc4c'],
-      wet_dynamic: ['9s8s7d', 'JhTh4c', '8d7c5d', 'QsJdTs']
-    };
-    const THEORY_TEXT = {
-      dry_static: 'Range advantage for the preflop raiser. Small, frequent c-bets; hands rarely change rank by the river.',
-      dry_dynamic: 'Few draws right now, but overcards and straight cards on the turn shift equity a lot. Bet for protection and plan turn barrels.',
-      wet_static: 'Draws are already completed or the board is locked. Value hands are well defined; play more cautiously without the key card.',
-      wet_dynamic: 'Many draws and the nuts change on most turns. Bigger sizes, fewer c-bets; equity runs close between ranges.'
-    };
-    function renderTheory() {
-      $('theory-matrix').innerHTML = CAT_KEYS.map(k =>
-        '<div class="p-3 sm:p-4 rounded-xl border-2 bg-slate-950/40 ' + CAT_BTN_CLASS[CATEGORIES[k].color].split(' ')[0] + '">' +
-          '<h3 class="font-extrabold text-white">' + CATEGORIES[k].label + '</h3>' +
-          '<p class="text-xs text-slate-400 mt-1 mb-3">' + THEORY_TEXT[k] + '</p>' +
-          '<div class="flex flex-wrap gap-2">' + THEORY_EXAMPLES[k].map(ex =>
-            '<button data-lab-board="' + ex + '" title="Open in Custom Lab" class="flex gap-0.5 p-1 rounded-lg hover:bg-slate-800 transition">' + miniBoardHtml(parseBoard(ex)) + '</button>').join('') +
-          '</div></div>'
-      ).join('');
+    function updateStatsUI() {
+      const streakVal = document.getElementById('stat-streak-val');
+      if (streakVal) streakVal.textContent = appState.streak;
+
+      const acc = appState.totalDealt > 0 ? Math.round((appState.correctCount / appState.totalDealt) * 100) : 0;
+      const accVal = document.getElementById('stat-accuracy-val');
+      if (accVal) accVal.textContent = appState.totalDealt > 0 ? `${acc}%` : '--%';
+
+      const totalVal = document.getElementById('stat-total-val');
+      if (totalVal) totalVal.textContent = appState.totalDealt;
+
+      const totalHandsEl = document.getElementById('stats-total-hands');
+      if (totalHandsEl) {
+        totalHandsEl.textContent = appState.totalDealt;
+        document.getElementById('stats-accuracy-pct').textContent = `${acc}%`;
+        document.getElementById('stats-best-streak').textContent = appState.bestStreak;
+        const dwAcc = appState.totalDealt > 0 ? Math.round((appState.dryWetCorrect / appState.totalDealt) * 100) : 0;
+        document.getElementById('stats-drywet-pct').textContent = `${dwAcc}%`;
+
+        const tbody = document.getElementById('history-table-body');
+        if (tbody) {
+          if (appState.history.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-slate-500">No hands recorded yet.</td></tr>';
+          } else {
+            tbody.innerHTML = appState.history.map(item => {
+              const cardsStr = item.cards.map(c => `${RANK_LABELS[c.rank]}${SUIT_SYMBOLS[c.suit]}`).join(' ');
+              return `
+                <tr class="hover:bg-slate-800/40">
+                  <td class="py-2 px-2 font-mono-code font-bold">${cardsStr}</td>
+                  <td class="py-2 px-2 text-slate-300">${item.userAnswer}</td>
+                  <td class="py-2 px-2 font-semibold text-white">${item.correctAnswer}</td>
+                  <td class="py-2 px-2 font-bold ${item.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">${item.isCorrect ? '✓' : '✗'}</td>
+                </tr>
+              `;
+            }).join('');
+          }
+        }
+      }
     }
 
-    // ---------- Stats ----------
-    function statTile(label, value, cls) {
-      return '<div class="bg-slate-900/60 p-3 sm:p-4 rounded-2xl border border-slate-800"><div class="text-xs text-slate-400">' + label + '</div><div class="text-xl sm:text-2xl font-extrabold ' + cls + '">' + value + '</div></div>';
+    let challengeCards = [];
+    let challengeCurrentIndex = 0;
+    let challengeScore = 0;
+    let challengeTally = {};
+
+    function startChallenge() {
+      challengeCurrentIndex = 0;
+      challengeScore = 0;
+      challengeTally = { dry_static: [0, 0], dry_dynamic: [0, 0], wet_static: [0, 0], wet_dynamic: [0, 0] };
+      const mix = ['dry_static', 'dry_dynamic', 'wet_dynamic', 'wet_static', 'dry_static', 'dry_dynamic', 'wet_dynamic', 'monotone', 'paired', 'rainbow'];
+      for (let i = mix.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [mix[i], mix[j]] = [mix[j], mix[i]];
+      }
+      challengeCards = mix.map(f => sortCards(generateRandomFlop(f)));
+      const scorecard = document.getElementById('challenge-scorecard');
+      if (scorecard) scorecard.classList.add('hidden');
+      const controlsBox = document.getElementById('challenge-controls-box');
+      if (controlsBox) controlsBox.classList.remove('hidden');
+      loadChallengeStep();
     }
-    function renderStats() {
-      const acc = stats.total ? Math.round(100 * stats.correct / stats.total) + '%' : '--';
-      $('stats-summary').innerHTML =
-        statTile('Hands answered', stats.total, 'text-white') +
-        statTile('Accuracy', acc, 'text-emerald-400') +
-        statTile('Best streak', stats.bestStreak, 'text-amber-400') +
-        statTile('Best challenge', stats.challengeBest ? stats.challengeBest.score + '/10' : '--', 'text-sky-400');
-      $('stats-breakdown').innerHTML = CAT_KEYS.map(k => {
-        const s = stats.byCat[k], pct = s.seen ? Math.round(100 * s.correct / s.seen) : 0;
-        return '<div><div class="flex justify-between text-xs sm:text-sm mb-1"><span class="text-slate-200">' + CATEGORIES[k].label + '</span><span class="text-slate-400">' + (s.seen ? pct + '% (' + s.correct + '/' + s.seen + ')' : 'no hands yet') + '</span></div>' +
-          '<div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full ' + (pct >= 80 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-red-500') + '" style="width:' + pct + '%"></div></div></div>';
+
+    function loadChallengeStep() {
+      if (challengeCurrentIndex >= 10) {
+        finishChallenge();
+        return;
+      }
+      const progressText = document.getElementById('challenge-progress-text');
+      if (progressText) progressText.textContent = `Flop ${challengeCurrentIndex + 1}/10`;
+      renderFlopCards(challengeCards[challengeCurrentIndex], 'challenge-cards-container', true);
+      playDealSound();
+    }
+
+    function answerChallenge(quadKey) {
+      if (challengeCurrentIndex >= 10) return;
+      const evalRes = evaluateFlop(challengeCards[challengeCurrentIndex]);
+      const isCorrect = quadKey === evalRes.quadrantKey;
+      challengeTally[evalRes.quadrantKey][1]++;
+      if (isCorrect) {
+        challengeScore++;
+        challengeTally[evalRes.quadrantKey][0]++;
+        playCorrectSound();
+      } else {
+        playWrongSound();
+      }
+      const titles = { dry_static: 'Dry & Static', dry_dynamic: 'Dry & Dynamic', wet_static: 'Wet & Static', wet_dynamic: 'Wet & Dynamic' };
+      appState.history.unshift({
+        cards: [...challengeCards[challengeCurrentIndex]],
+        userAnswer: titles[quadKey],
+        correctAnswer: evalRes.quadrantTitle,
+        isCorrect
+      });
+      if (appState.history.length > 30) appState.history.pop();
+      saveState();
+      challengeCurrentIndex++;
+      loadChallengeStep();
+    }
+
+    function finishChallenge() {
+      const controlsBox = document.getElementById('challenge-controls-box');
+      if (controlsBox) controlsBox.classList.add('hidden');
+      const scorecard = document.getElementById('challenge-scorecard');
+      if (scorecard) scorecard.classList.remove('hidden');
+
+      const pct = Math.round((challengeScore / 10) * 100);
+      const grade = pct >= 90 ? 'A+' : pct >= 80 ? 'A' : pct >= 70 ? 'B' : pct >= 60 ? 'C' : 'D';
+      const badge = document.getElementById('challenge-grade-badge');
+      if (badge) {
+        badge.textContent = grade;
+        badge.className = `w-20 h-20 rounded-full border-2 flex items-center justify-center text-3xl font-extrabold ${pct >= 70 ? 'text-emerald-400 border-emerald-500' : 'text-rose-400 border-rose-500'}`;
+      }
+      const desc = document.getElementById('challenge-score-desc');
+      if (desc) desc.textContent = `Got ${challengeScore} out of 10 correct (${pct}%).`;
+      [['ds', 'dry_static'], ['dd', 'dry_dynamic'], ['ws', 'wet_static'], ['wd', 'wet_dynamic']].forEach(([id, key]) => {
+        const el = document.getElementById(`ch-stat-${id}`);
+        const [right, seen] = challengeTally[key];
+        if (el) el.textContent = seen ? `${right}/${seen}` : '--';
+      });
+    }
+
+    // CUSTOM LAB LOGIC
+    let labSelectedCards = [];
+
+    function buildDeckPicker() {
+      const container = document.getElementById('deck-picker-container');
+      if (!container) return;
+      container.innerHTML = SUITS.map(suit => {
+        const rowColors = getCardColors(suit);
+        const buttons = RANKS.map(rank => `
+          <button type="button" class="lab-card-pick-btn w-[22px] h-8 sm:w-8 sm:h-10 rounded border font-mono-code font-bold text-[10px] sm:text-xs flex flex-col items-center justify-center leading-none ring-offset-1 ring-offset-slate-900 active:scale-95 shrink-0" style="background-color: ${rowColors.bg}; color: ${rowColors.text}; border-color: ${rowColors.border};" data-rank="${rank}" data-suit="${suit}">
+            <span>${RANK_LABELS[rank]}</span>
+            <span class="text-[9px]" style="color: ${rowColors.suitColor}">${SUIT_SYMBOLS[suit]}</span>
+          </button>
+        `).join('');
+        return `
+          <div class="flex items-center gap-1">
+            <span class="w-4 text-center font-bold text-xs" style="color: ${suit === 's' || (suit === 'c' && !isFourColorDeck) ? '#e2e8f0' : rowColors.suitColor}">${SUIT_SYMBOLS[suit]}</span>
+            <div class="flex gap-0.5 sm:gap-1 overflow-x-auto scrollbar-none">${buttons}</div>
+          </div>
+        `;
       }).join('');
-      const onlyMistakes = $('stats-mistakes-only').checked;
-      const items = stats.history.filter(h => !onlyMistakes || !h.correct).slice(0, 30);
-      $('stats-history').innerHTML = items.length ? items.map(h =>
-        '<button data-lab-board="' + h.board + '" class="flex items-center gap-3 p-2 rounded-xl border text-left hover:bg-slate-800/60 transition ' + (h.correct ? 'border-slate-800' : 'border-red-900 bg-red-950/20') + '">' +
-          '<span class="flex gap-1">' + miniBoardHtml(parseBoard(h.board)) + '</span>' +
-          '<span class="text-xs sm:text-sm flex-1">' + (h.correct ? '<span class="text-emerald-400 font-bold">✓</span> ' + CATEGORIES[h.actual].short : '<span class="text-red-400 font-bold">✗</span> ' + CATEGORIES[h.answer].short + ' → <strong class="text-white">' + CATEGORIES[h.actual].short + '</strong>') + '</span>' +
-          '<span class="text-[10px] text-slate-500">' + h.mode + '</span>' +
-        '</button>').join('') : '<p class="text-sm text-slate-500">' + (onlyMistakes ? 'No mistakes yet. Nice!' : 'No hands yet. Head to Drill Mode to start.') + '</p>';
-    }
-    function resetStats() {
-      if (!confirm('Reset all stats and history?')) return;
-      stats = freshStats();
-      store.set('stats', stats);
-      updateDrillStats();
-      renderStats();
+
+      document.querySelectorAll('.lab-card-pick-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const r = parseInt(e.currentTarget.getAttribute('data-rank'), 10);
+          const s = e.currentTarget.getAttribute('data-suit');
+          toggleLabCard(r, s);
+        });
+      });
     }
 
-    // ---------- Wiring ----------
-    function init() {
-      $('drill-answers').innerHTML = answerButtonsHtml('drill-ans');
-      $('challenge-answers').innerHTML = answerButtonsHtml('chal-ans');
+    function toggleLabCard(rank, suit) {
+      const idx = labSelectedCards.findIndex(c => c.rank === rank && c.suit === suit);
+      if (idx !== -1) {
+        labSelectedCards.splice(idx, 1);
+      } else {
+        if (labSelectedCards.length >= 3) labSelectedCards.shift();
+        labSelectedCards.push({ rank, suit });
+        playDealSound();
+      }
+      renderLab();
+    }
 
-      VIEWS.forEach(v => $('nav-' + v + '-btn').addEventListener('click', () => showView(v)));
-      ['toggle-deck-color-btn', 'toggle-deck-color-btn-m'].forEach(id => $(id).addEventListener('click', toggleDeckColor));
-      ['toggle-sound-btn', 'toggle-sound-btn-m'].forEach(id => $(id).addEventListener('click', toggleSound));
+    function renderLab() {
+      const badge = document.getElementById('lab-selected-count-badge');
+      if (badge) badge.textContent = `${labSelectedCards.length} / 3`;
 
-      $('deal-next-btn').addEventListener('click', () => dealDrill());
-      $('drill-filter-select').addEventListener('change', () => dealDrill());
-      $('drill-answers').addEventListener('click', e => { const b = e.target.closest('[data-answer]'); if (b) answerDrill(b.dataset.answer); });
+      document.querySelectorAll('.lab-card-pick-btn').forEach(btn => {
+        const r = parseInt(btn.getAttribute('data-rank'), 10);
+        const s = btn.getAttribute('data-suit');
+        const picked = labSelectedCards.some(c => c.rank === r && c.suit === s);
+        btn.classList.toggle('ring-2', picked);
+        btn.classList.toggle('ring-amber-400', picked);
+        btn.style.backgroundColor = picked ? '#fde68a' : getCardColors(s).bg;
+      });
 
-      $('challenge-start-btn').addEventListener('click', startChallenge);
-      $('challenge-retry-btn').addEventListener('click', startChallenge);
-      $('challenge-back-btn').addEventListener('click', () => showView('drill'));
-      $('challenge-quit-btn').addEventListener('click', quitChallenge);
-      $('challenge-answers').addEventListener('click', e => { const b = e.target.closest('[data-answer]'); if (b) answerChallenge(b.dataset.answer); });
+      const slots = document.getElementById('lab-selected-cards');
+      if (slots) {
+        if (labSelectedCards.length === 0) {
+          slots.innerHTML = `
+            <div class="poker-card-lab border-2 border-dashed border-emerald-500/30 flex items-center justify-center text-emerald-500/40 text-[10px] font-bold">Slot 1</div>
+            <div class="poker-card-lab border-2 border-dashed border-emerald-500/30 flex items-center justify-center text-emerald-500/40 text-[10px] font-bold">Slot 2</div>
+            <div class="poker-card-lab border-2 border-dashed border-emerald-500/30 flex items-center justify-center text-emerald-500/40 text-[10px] font-bold">Slot 3</div>
+          `;
+        } else {
+          let html = sortCards(labSelectedCards).map(c => createCardHTML(c, '', 'lab-slot')).join('');
+          for (let i = labSelectedCards.length; i < 3; i++) {
+            html += `<div class="poker-card-lab border-2 border-dashed border-emerald-500/30 flex items-center justify-center text-emerald-500/40 text-[10px] font-bold">Slot ${i + 1}</div>`;
+          }
+          slots.innerHTML = html;
+        }
+      }
 
-      $('lab-picker').addEventListener('click', e => { const b = e.target.closest('[data-pick]'); if (b) togglePick(b.dataset.pick); });
-      $('lab-random-btn').addEventListener('click', () => { labSelection = randomFlop(); renderLab(); });
-      $('lab-clear-btn').addEventListener('click', () => { labSelection = []; renderLab(); });
-      $('lab-drill-btn').addEventListener('click', () => { if (labSelection.length === 3) { showView('drill'); dealDrill(sortBoard(labSelection)); } });
+      if (labSelectedCards.length === 3) {
+        const res = evaluateFlop(labSelectedCards);
+        document.getElementById('lab-select-instruction').textContent = `${res.quadrantTitle}`;
+        document.getElementById('lab-plot-quadrant-badge').textContent = res.quadrantTitle;
+        document.getElementById('lab-metric-drywet').textContent = `${res.wetScore}/100 (${res.wetLabel})`;
+        document.getElementById('lab-metric-statdyn').textContent = `${res.dynScore}/100 (${res.dynLabel})`;
+        document.getElementById('lab-gto-text').textContent = `${res.gtoRange} ${res.gtoCbet}`;
 
-      // Any "open in lab" mini-board (theory, challenge review, history)
-      document.addEventListener('click', e => { const b = e.target.closest('[data-lab-board]'); if (b) openInLab(b.dataset.labBoard); });
+        const pin = document.getElementById('lab-plot-pin');
+        if (pin) {
+          const toAxis = (v, cut) => v < cut ? (v / cut) * 50 : 50 + ((v - cut) / (100 - cut)) * 50;
+          pin.style.left = `${8 + toAxis(res.wetScore, 38) * 0.84}%`;
+          pin.style.top = `${8 + toAxis(res.dynScore, 48) * 0.84}%`;
+        }
+      } else {
+        document.getElementById('lab-select-instruction').textContent = `Select ${3 - labSelectedCards.length} more card(s)`;
+        document.getElementById('lab-plot-quadrant-badge').textContent = 'Pick 3';
+        document.getElementById('lab-metric-drywet').textContent = '--';
+        document.getElementById('lab-metric-statdyn').textContent = '--';
+        document.getElementById('lab-gto-text').textContent = 'Select 3 cards to generate strategy.';
+        const pin = document.getElementById('lab-plot-pin');
+        if (pin) { pin.style.left = '50%'; pin.style.top = '50%'; }
+      }
+    }
 
-      $('stats-mistakes-only').addEventListener('change', renderStats);
-      $('stats-reset-btn').addEventListener('click', resetStats);
+    function switchView(viewId) {
+      ['view-drill', 'view-challenge', 'view-lab', 'view-theory', 'view-stats'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('hidden', id !== viewId);
+      });
 
-      document.addEventListener('keydown', e => {
-        if (e.target.closest('input, select, textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
-        const cat = CAT_KEYS.find(k => CATEGORIES[k].key === e.key);
-        if (currentView === 'drill') {
-          if (e.code === 'Space') { e.preventDefault(); dealDrill(); }
-          else if (cat) answerDrill(cat);
-        } else if (currentView === 'challenge' && challenge.running && cat) {
-          answerChallenge(cat);
+      const navMap = {
+        'view-drill': 'nav-drill-btn',
+        'view-challenge': 'nav-challenge-btn',
+        'view-lab': 'nav-lab-btn',
+        'view-theory': 'nav-theory-btn',
+        'view-stats': 'nav-stats-btn'
+      };
+
+      Object.entries(navMap).forEach(([v, bId]) => {
+        const btn = document.getElementById(bId);
+        if (btn) {
+          if (v === viewId) {
+            btn.className = 'nav-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-emerald-500 text-slate-950 shrink-0 shadow';
+          } else {
+            btn.className = 'nav-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 shrink-0';
+          }
         }
       });
 
-      applySettings();
-      updateDrillStats();
-      renderLab();
-      renderTheory();
-      dealDrill(null, true);
+      if (viewId === 'view-challenge' && challengeCards.length === 0) startChallenge();
+      if (viewId === 'view-lab') { buildDeckPicker(); renderLab(); }
+      if (viewId === 'view-stats') updateStatsUI();
     }
-    init();
-  })();
+
+    // MAIN INITIALIZATION FUNCTION
+    function initApp() {
+      loadState();
+      updateStatsUI();
+
+      // Tab Navigation
+      const drillNav = document.getElementById('nav-drill-btn');
+      if (drillNav) drillNav.addEventListener('click', () => switchView('view-drill'));
+      const challengeNav = document.getElementById('nav-challenge-btn');
+      if (challengeNav) challengeNav.addEventListener('click', () => switchView('view-challenge'));
+      const labNav = document.getElementById('nav-lab-btn');
+      if (labNav) labNav.addEventListener('click', () => switchView('view-lab'));
+      const theoryNav = document.getElementById('nav-theory-btn');
+      if (theoryNav) theoryNav.addEventListener('click', () => switchView('view-theory'));
+      const statsNav = document.getElementById('nav-stats-btn');
+      if (statsNav) statsNav.addEventListener('click', () => switchView('view-stats'));
+
+      // 4-Color Deck Switch
+      function applyDeckColorUI() {
+        const txt = document.getElementById('deck-color-mode-text');
+        if (txt) txt.textContent = isFourColorDeck ? '4-Color' : 'Classic';
+        ['diamond-preview-icon', 'diamond-preview-icon-m'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.className = isFourColorDeck ? 'text-blue-400' : 'text-red-400';
+        });
+        ['club-preview-icon', 'club-preview-icon-m'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.className = isFourColorDeck ? 'text-emerald-400' : 'text-slate-200';
+        });
+      }
+      function toggleFourColor() {
+        isFourColorDeck = !isFourColorDeck;
+        savePrefs();
+        applyDeckColorUI();
+        renderFlopCards(currentDrillCards, 'flop-cards-container', false);
+        if (challengeCards[challengeCurrentIndex]) renderFlopCards(challengeCards[challengeCurrentIndex], 'challenge-cards-container', false);
+        const labView = document.getElementById('view-lab');
+        if (labView && !labView.classList.contains('hidden')) {
+          buildDeckPicker();
+          renderLab();
+        }
+      }
+
+      const deckBtn = document.getElementById('toggle-deck-color-btn');
+      if (deckBtn) deckBtn.addEventListener('click', toggleFourColor);
+      const deckBtnM = document.getElementById('toggle-deck-color-btn-m');
+      if (deckBtnM) deckBtnM.addEventListener('click', toggleFourColor);
+
+      // Sound Toggle
+      function applySoundUI() {
+        ['sound-on-svg', 'sound-on-svg-m'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.toggle('hidden', !soundEnabled);
+        });
+        ['sound-off-svg', 'sound-off-svg-m'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.toggle('hidden', soundEnabled);
+        });
+      }
+      function toggleSound() {
+        soundEnabled = !soundEnabled;
+        savePrefs();
+        applySoundUI();
+        if (soundEnabled) initAudio();
+      }
+      applyDeckColorUI();
+      applySoundUI();
+
+      const soundBtn = document.getElementById('toggle-sound-btn');
+      if (soundBtn) soundBtn.addEventListener('click', toggleSound);
+      const soundBtnM = document.getElementById('toggle-sound-btn-m');
+      if (soundBtnM) soundBtnM.addEventListener('click', toggleSound);
+
+      // Drill Action Listeners
+      const dealNextBtn = document.getElementById('deal-next-btn');
+      if (dealNextBtn) dealNextBtn.addEventListener('click', () => dealNewDrillFlop());
+      const nextDrillBtn = document.getElementById('btn-next-drill-flop');
+      if (nextDrillBtn) nextDrillBtn.addEventListener('click', () => dealNewDrillFlop());
+      const nextAfterFeedback = document.getElementById('btn-next-flop-after-feedback');
+      if (nextAfterFeedback) nextAfterFeedback.addEventListener('click', () => dealNewDrillFlop());
+      const filterSelect = document.getElementById('drill-filter-select');
+      if (filterSelect) filterSelect.addEventListener('change', () => dealNewDrillFlop());
+
+      const dryBtn = document.getElementById('btn-toggle-dry');
+      if (dryBtn) dryBtn.addEventListener('click', () => setDrillSelection('Dry', undefined));
+      const wetBtn = document.getElementById('btn-toggle-wet');
+      if (wetBtn) wetBtn.addEventListener('click', () => setDrillSelection('Wet', undefined));
+      const staticBtn = document.getElementById('btn-toggle-static');
+      if (staticBtn) staticBtn.addEventListener('click', () => setDrillSelection(undefined, 'Static'));
+      const dynamicBtn = document.getElementById('btn-toggle-dynamic');
+      if (dynamicBtn) dynamicBtn.addEventListener('click', () => setDrillSelection(undefined, 'Dynamic'));
+
+      const submitAnswerBtn = document.getElementById('btn-submit-answer');
+      if (submitAnswerBtn) submitAnswerBtn.addEventListener('click', submitDrillAnswer);
+
+      // Challenge Action Listeners
+      const restartChallengeBtn = document.getElementById('challenge-restart-btn');
+      if (restartChallengeBtn) restartChallengeBtn.addEventListener('click', startChallenge);
+      const playAgainBtn = document.getElementById('challenge-play-again-btn');
+      if (playAgainBtn) playAgainBtn.addEventListener('click', startChallenge);
+
+      const chDryStatic = document.getElementById('ch-btn-dry-static');
+      if (chDryStatic) chDryStatic.addEventListener('click', () => answerChallenge('dry_static'));
+      const chDryDynamic = document.getElementById('ch-btn-dry-dynamic');
+      if (chDryDynamic) chDryDynamic.addEventListener('click', () => answerChallenge('dry_dynamic'));
+      const chWetStatic = document.getElementById('ch-btn-wet-static');
+      if (chWetStatic) chWetStatic.addEventListener('click', () => answerChallenge('wet_static'));
+      const chWetDynamic = document.getElementById('ch-btn-wet-dynamic');
+      if (chWetDynamic) chWetDynamic.addEventListener('click', () => answerChallenge('wet_dynamic'));
+
+      // Lab Action Listeners
+      const labRandomBtn = document.getElementById('lab-random-btn');
+      if (labRandomBtn) labRandomBtn.addEventListener('click', () => {
+        labSelectedCards = [...generateRandomFlop('all')];
+        playDealSound();
+        renderLab();
+      });
+      const labClearBtn = document.getElementById('lab-clear-btn');
+      if (labClearBtn) labClearBtn.addEventListener('click', () => {
+        labSelectedCards = [];
+        renderLab();
+      });
+
+      // Theory Sample Listeners
+      document.querySelectorAll('.theory-drill-sample-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const sampleKey = e.currentTarget.getAttribute('data-sample');
+          const sample = CURATED_SAMPLES[sampleKey];
+          if (sample) {
+            switchView('view-drill');
+            dealNewDrillFlop(sample);
+          }
+        });
+      });
+
+      // Stats Reset
+      const resetStatsBtn = document.getElementById('btn-reset-stats');
+      if (resetStatsBtn) resetStatsBtn.addEventListener('click', () => {
+        if (!confirm('Reset all stats and hand history?')) return;
+        appState = { streak: 0, bestStreak: 0, totalDealt: 0, correctCount: 0, dryWetCorrect: 0, statDynCorrect: 0, history: [] };
+        saveState();
+        updateStatsUI();
+      });
+
+      // Keyboard Shortcuts
+      window.addEventListener('keydown', (e) => {
+        if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+        if (e.target && e.target.closest && e.target.closest('select, input, textarea')) return;
+        const challengeView = document.getElementById('view-challenge');
+        if (challengeView && !challengeView.classList.contains('hidden')) {
+          const quads = { '1': 'dry_static', '2': 'dry_dynamic', '3': 'wet_static', '4': 'wet_dynamic' };
+          if (quads[e.key]) answerChallenge(quads[e.key]);
+          return;
+        }
+        const drill = document.getElementById('view-drill');
+        if (drill && !drill.classList.contains('hidden')) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            // Let focused buttons outside the drill panel (e.g. tabs) work natively; inside it, the shortcut wins
+            if (e.target.closest('button') && !e.target.closest('#view-drill')) return;
+            e.preventDefault();
+          }
+          const k = e.key.toLowerCase();
+          if (k === 'd') setDrillSelection('Dry', undefined);
+          else if (k === 'w') setDrillSelection('Wet', undefined);
+          else if (k === 's') setDrillSelection(undefined, 'Static');
+          else if (k === 'y' || k === 'v') setDrillSelection(undefined, 'Dynamic');
+          else if (e.key === 'Enter') submitDrillAnswer();
+          else if (e.key === ' ') {
+            e.preventDefault();
+            if (drillAnswered) dealNewDrillFlop();
+            else submitDrillAnswer();
+          }
+        }
+      });
+
+      // Deal initial flop immediately
+      dealNewDrillFlop();
+    }
+
+    // Run initialization immediately or on DOM ready to guarantee execution in preview iframes
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
   </script>
 </body>
 </html>

@@ -59,6 +59,14 @@
       }
     }
 
+    @media (min-width: 1024px) {
+      .poker-card {
+        width: 132px;
+        height: 188px;
+        border-radius: 18px;
+      }
+    }
+
     .poker-card-lab {
       width: 74px;
       height: 110px;
@@ -127,9 +135,6 @@
           <button id="nav-lab-btn" type="button" class="nav-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 shrink-0">
             Custom Lab
           </button>
-          <button id="nav-theory-btn" type="button" class="nav-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 shrink-0">
-            Theory & Matrix
-          </button>
           <button id="nav-stats-btn" type="button" class="nav-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 shrink-0">
             Stats & Review
           </button>
@@ -192,9 +197,6 @@
             <option value="rainbow">Rainbow Flops</option>
             <option value="paired">Paired Flops</option>
           </select>
-          <button id="deal-next-btn" type="button" class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow transition shrink-0 active:scale-95">
-            New Flop
-          </button>
         </div>
       </div>
 
@@ -206,7 +208,7 @@
         <div class="relative z-10 flex flex-col items-center gap-2.5 w-full">
           <div class="text-[10px] sm:text-xs tracking-widest uppercase font-bold text-emerald-400/80">THE COMMUNITY FLOP</div>
           
-          <div id="flop-cards-container" class="flex items-center justify-center gap-2 sm:gap-4 max-w-full min-h-[120px] sm:min-h-[164px]">
+          <div id="flop-cards-container" class="flex items-center justify-center gap-2 sm:gap-4 max-w-full min-h-[120px] sm:min-h-[164px] lg:min-h-[188px]">
             <!-- Cards rendered via JS -->
           </div>
 
@@ -303,9 +305,6 @@
             <div id="feedback-subtitle" class="text-xs sm:text-sm text-slate-300">Board is <span class="font-bold underline text-white" id="feedback-correct-quadrant-text">Dry &amp; Static</span>.</div>
           </div>
         </div>
-        <button id="btn-next-flop-after-feedback" type="button" class="w-full sm:w-auto px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs sm:text-sm shadow transition active:scale-95">
-          Next Flop
-        </button>
       </div>
 
       <!-- BOARD ANALYSIS (Hidden until checked) -->
@@ -385,7 +384,7 @@
       </div>
 
       <div class="relative overflow-hidden rounded-2xl border-2 sm:border-4 border-amber-950/80 poker-table-border poker-felt p-4 min-h-[170px] sm:min-h-[230px] flex items-center justify-center">
-        <div id="challenge-cards-container" class="flex items-center justify-center gap-2 sm:gap-4 max-w-full min-h-[120px] sm:min-h-[164px]"></div>
+        <div id="challenge-cards-container" class="flex items-center justify-center gap-2 sm:gap-4 max-w-full min-h-[120px] sm:min-h-[164px] lg:min-h-[188px]"></div>
       </div>
 
       <div id="challenge-controls-box" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col gap-2.5">
@@ -478,46 +477,6 @@
               <p id="lab-gto-text" class="text-slate-300 mt-0.5">Select 3 cards to generate strategy.</p>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- VIEW 4: THEORY -->
-    <section id="view-theory" class="hidden flex flex-col gap-4">
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 flex flex-col gap-2">
-        <h2 class="text-lg sm:text-2xl font-extrabold text-white">Why Static vs. Dynamic Shapes Post-Flop GTO</h2>
-        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
-          While "Wet vs. Dry" measures the count of immediate draws, "Static vs. Dynamic" dictates how much future turn and river cards will shuffle who has the winning equity.
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="bg-slate-900 border-2 border-emerald-500/30 rounded-2xl p-4 flex flex-col gap-2">
-          <div class="font-bold text-white text-sm sm:text-base">🌵🏛️ Dry &amp; Static</div>
-          <div class="font-mono-code text-xs text-emerald-300">A♠ 8♦ 3♣ &bull; K♥ 7♦ 2♣</div>
-          <p class="text-xs text-slate-300 mt-1">High card rainbow. Equities are locked. Small c-bets (25%-33%) work best.</p>
-          <button type="button" class="theory-drill-sample-btn mt-2 py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-emerald-600 hover:text-slate-950 text-slate-200 text-xs font-bold transition" data-sample="dry_static">Practice This Texture &rarr;</button>
-        </div>
-
-        <div class="bg-slate-900 border-2 border-amber-500/30 rounded-2xl p-4 flex flex-col gap-2">
-          <div class="font-bold text-white text-sm sm:text-base">🌵⚡ Dry &amp; Dynamic</div>
-          <div class="font-mono-code text-xs text-amber-300">7♠ 4♦ 2♣ &bull; 8♥ 3♦ 2♠</div>
-          <p class="text-xs text-slate-300 mt-1">Low disconnected cards. Up to 28 overcards can fall on the turn. Need medium-large sizing (50%-66%) for protection.</p>
-          <button type="button" class="theory-drill-sample-btn mt-2 py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-amber-600 hover:text-slate-950 text-slate-200 text-xs font-bold transition" data-sample="dry_dynamic">Practice This Texture &rarr;</button>
-        </div>
-
-        <div class="bg-slate-900 border-2 border-blue-500/30 rounded-2xl p-4 flex flex-col gap-2">
-          <div class="font-bold text-white text-sm sm:text-base">🌊🏛️ Wet &amp; Static</div>
-          <div class="font-mono-code text-xs text-blue-300">A♠ K♠ 8♠ &bull; K♥ Q♥ 4♥</div>
-          <p class="text-xs text-slate-300 mt-1">Monotone high cards. Flushes are already out, so the nut flush holder has insurmountable equity and few turns change that.</p>
-          <button type="button" class="theory-drill-sample-btn mt-2 py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-blue-600 hover:text-slate-950 text-slate-200 text-xs font-bold transition" data-sample="wet_static">Practice This Texture &rarr;</button>
-        </div>
-
-        <div class="bg-slate-900 border-2 border-rose-500/30 rounded-2xl p-4 flex flex-col gap-2">
-          <div class="font-bold text-white text-sm sm:text-base">🌊⚡ Wet &amp; Dynamic</div>
-          <div class="font-mono-code text-xs text-rose-300">J♥ T♥ 9♠ &bull; 8♠ 7♠ 6♦</div>
-          <p class="text-xs text-slate-300 mt-1">Connected suited cards. Heavy draw density and turbulence. Large c-bets (66%-80%+) or checks.</p>
-          <button type="button" class="theory-drill-sample-btn mt-2 py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-rose-600 hover:text-slate-950 text-slate-200 text-xs font-bold transition" data-sample="wet_dynamic">Practice This Texture &rarr;</button>
         </div>
       </div>
     </section>
@@ -674,20 +633,12 @@
 
       return `
         <div class="${cardClass} select-none shadow-xl flex flex-col justify-between relative overflow-hidden font-bold ${animClass}"
-             style="background-color: ${colors.bg}; color: ${colors.text}; border: 2px solid ${colors.border}; padding: 8px;">
-          <!-- Top Left Rank & Suit -->
-          <div class="flex flex-col items-center leading-none self-start">
-            <span class="tracking-tighter font-black text-sm sm:text-base">${rankLabel}</span>
-            <span class="text-xs sm:text-sm font-bold" style="color: ${colors.suitColor}">${symbol}</span>
-          </div>
-          <!-- Center Watermark Symbol -->
-          <div class="absolute inset-0 flex items-center justify-center opacity-80 pointer-events-none">
-            <span class="text-4xl sm:text-6xl font-bold" style="color: ${colors.suitColor}">${symbol}</span>
-          </div>
-          <!-- Bottom Right Inverted Rank & Suit -->
-          <div class="flex flex-col items-center leading-none self-end rotate-180">
-            <span class="tracking-tighter font-black text-sm sm:text-base">${rankLabel}</span>
-            <span class="text-xs sm:text-sm font-bold" style="color: ${colors.suitColor}">${symbol}</span>
+             style="background-color: ${colors.bg}; color: ${colors.text}; border: 2px solid ${colors.border}; padding: 8px 10px;">
+          <!-- Rank (top left) -->
+          <div class="leading-none self-start tracking-tighter font-black ${size === 'lab-slot' ? 'text-xl sm:text-3xl' : 'text-2xl sm:text-4xl lg:text-5xl'}">${rankLabel}</div>
+          <!-- Suit (shown once, centred) -->
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="padding-top: 18%;">
+            <span class="font-bold leading-none ${size === 'lab-slot' ? 'text-4xl sm:text-6xl' : 'text-5xl sm:text-7xl lg:text-8xl'}" style="color: ${colors.suitColor}">${symbol}</span>
           </div>
         </div>
       `;
@@ -905,13 +856,6 @@
       }
       return [deck[0], deck[1], deck[2]];
     }
-
-    const CURATED_SAMPLES = {
-      dry_static: [ { rank: 14, suit: 's' }, { rank: 8, suit: 'd' }, { rank: 3, suit: 'c' } ],
-      dry_dynamic: [ { rank: 7, suit: 's' }, { rank: 4, suit: 'd' }, { rank: 2, suit: 'c' } ],
-      wet_static: [ { rank: 14, suit: 's' }, { rank: 13, suit: 's' }, { rank: 8, suit: 's' } ],
-      wet_dynamic: [ { rank: 11, suit: 'h' }, { rank: 10, suit: 'h' }, { rank: 9, suit: 's' } ]
-    };
 
     const STORAGE_KEY = 'flopmaster_poker_stats_v3';
     let appState = {
@@ -1351,7 +1295,7 @@
     }
 
     function switchView(viewId) {
-      ['view-drill', 'view-challenge', 'view-lab', 'view-theory', 'view-stats'].forEach(id => {
+      ['view-drill', 'view-challenge', 'view-lab', 'view-stats'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.toggle('hidden', id !== viewId);
       });
@@ -1360,7 +1304,6 @@
         'view-drill': 'nav-drill-btn',
         'view-challenge': 'nav-challenge-btn',
         'view-lab': 'nav-lab-btn',
-        'view-theory': 'nav-theory-btn',
         'view-stats': 'nav-stats-btn'
       };
 
@@ -1392,8 +1335,6 @@
       if (challengeNav) challengeNav.addEventListener('click', () => switchView('view-challenge'));
       const labNav = document.getElementById('nav-lab-btn');
       if (labNav) labNav.addEventListener('click', () => switchView('view-lab'));
-      const theoryNav = document.getElementById('nav-theory-btn');
-      if (theoryNav) theoryNav.addEventListener('click', () => switchView('view-theory'));
       const statsNav = document.getElementById('nav-stats-btn');
       if (statsNav) statsNav.addEventListener('click', () => switchView('view-stats'));
 
@@ -1454,12 +1395,8 @@
       if (soundBtnM) soundBtnM.addEventListener('click', toggleSound);
 
       // Drill Action Listeners
-      const dealNextBtn = document.getElementById('deal-next-btn');
-      if (dealNextBtn) dealNextBtn.addEventListener('click', () => dealNewDrillFlop());
       const nextDrillBtn = document.getElementById('btn-next-drill-flop');
       if (nextDrillBtn) nextDrillBtn.addEventListener('click', () => dealNewDrillFlop());
-      const nextAfterFeedback = document.getElementById('btn-next-flop-after-feedback');
-      if (nextAfterFeedback) nextAfterFeedback.addEventListener('click', () => dealNewDrillFlop());
       const filterSelect = document.getElementById('drill-filter-select');
       if (filterSelect) filterSelect.addEventListener('change', () => dealNewDrillFlop());
 
@@ -1501,18 +1438,6 @@
       if (labClearBtn) labClearBtn.addEventListener('click', () => {
         labSelectedCards = [];
         renderLab();
-      });
-
-      // Theory Sample Listeners
-      document.querySelectorAll('.theory-drill-sample-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const sampleKey = e.currentTarget.getAttribute('data-sample');
-          const sample = CURATED_SAMPLES[sampleKey];
-          if (sample) {
-            switchView('view-drill');
-            dealNewDrillFlop(sample);
-          }
-        });
       });
 
       // Stats Reset

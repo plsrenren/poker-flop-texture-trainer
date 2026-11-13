@@ -151,14 +151,35 @@
     /* Drill */
     .drill { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
     .table-card { padding: 22px 20px; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; }
-    .seats { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
-    .seat { min-width: 50px; padding: 5px 6px; border-radius: 6px; border: 1px solid var(--line); font-size: 11px; font-weight: 700; color: var(--text-3); background: var(--bg); }
-    .seat small { display: block; font-size: 9px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-3); min-height: 12px; }
-    .seat.folded { opacity: 0.35; }
-    .seat.act { color: var(--text); border-color: var(--line-2); }
-    .seat.act small { color: var(--text-2); }
-    .seat.hero { color: var(--text); border-color: var(--accent); background: var(--accent-soft); }
-    .seat.hero small { color: var(--accent-2); }
+    /* Oval table: seats around the rail, chips in front of whoever put money in */
+    .ptable { position: relative; width: 100%; max-width: 560px; aspect-ratio: 2 / 1.08; margin: 4px auto 0; }
+    .ptable .felt {
+      position: absolute; inset: 13% 10%; border-radius: 999px; background: #121212;
+      border: 1px solid #2e2e2e; box-shadow: inset 0 0 0 7px #0d0d0d, inset 0 0 0 8px #262626;
+    }
+    .ptable .pot { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; }
+    .ptable .pot .k { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
+    .ptable .pot .v { font-family: var(--mono); font-size: 16px; font-weight: 700; color: var(--text); }
+    .seat {
+      position: absolute; transform: translate(-50%, -50%); width: 66px; padding: 4px 0 5px; border-radius: 8px; text-align: center;
+      border: 1px solid var(--line-2); background: #181818; font-size: 12px; font-weight: 800; color: var(--text-2); z-index: 2;
+    }
+    .seat small { display: block; font-size: 9px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-3); min-height: 11px; line-height: 11px; }
+    .seat.folded { opacity: 0.32; }
+    .seat.act { color: #fff; background: #262626; border-color: #e5e5e5; }
+    .seat.act small { color: #fff; }
+    .seat.hero { color: #fff; background: var(--accent); border-color: var(--accent); }
+    .seat.hero small { color: rgba(255,255,255,0.8); }
+    .bet {
+      position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 4px; z-index: 1;
+      font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--text-2); white-space: nowrap;
+    }
+    .bet i { width: 11px; height: 11px; border-radius: 50%; background: #737373; box-shadow: inset 0 0 0 2px #a3a3a3; display: block; }
+    .bet.big { color: #fff; font-size: 13px; }
+    .bet.big i { width: 14px; height: 14px; background: #f5f5f5; box-shadow: inset 0 0 0 3px #a3a3a3; }
+    .bet.mine { color: var(--accent-2); }
+    .bet.mine i { background: var(--accent); box-shadow: inset 0 0 0 2px var(--accent-2); }
+    .dealer { position: absolute; transform: translate(-50%, -50%); width: 18px; height: 18px; border-radius: 50%; background: #fafafa; color: #0a0a0a; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; z-index: 1; }
     .situation { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; max-width: 460px; }
     .hand { display: flex; gap: 10px; justify-content: center; }
     /* Hole cards: solid four-color face, small suit top left, big white rank */
@@ -231,9 +252,12 @@
       .pcard .r { font-size: 54px; bottom: 7px; }
       .pcard.ten .r { font-size: 42px; bottom: 12px; }
       .situation { font-size: 15px; }
-      .seats { display: grid; grid-template-columns: repeat(var(--n, 9), minmax(0, 1fr)); gap: 3px; width: 100%; }
-      .seat { min-width: 0; padding: 4px 0; font-size: 9.5px; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; }
-      .seat small { font-size: 7px; letter-spacing: 0.02em; }
+      .ptable { aspect-ratio: 1 / 0.74; }
+      .ptable .felt { inset: 12% 11%; }
+      .seat { width: 52px; font-size: 10.5px; padding: 3px 0 4px; }
+      .seat small { font-size: 7.5px; }
+      .bet { font-size: 10px; }
+      .bet.big { font-size: 11.5px; }
       .table-card { padding: 18px 12px; }
     }
   </style>
@@ -346,7 +370,7 @@
     <section class="view" id="view-drill" hidden>
       <div class="drill">
         <div class="card table-card" id="table-card">
-          <div class="seats" id="seats"></div>
+          <div class="ptable" id="seats"></div>
           <div class="situation" id="situation"></div>
           <div class="hand" id="hand"></div>
           <div class="answers" id="answers"></div>
@@ -1092,6 +1116,7 @@
     if (!spots.length) {
       D.cur = null;
       card.querySelector('#seats').innerHTML = '';
+      card.querySelector('#seats').style.display = 'none';
       document.getElementById('situation').innerHTML = '<div class="empty">' + (D.mine
         ? 'You have not edited any ranges for these spots yet. Paint one on the Ranges tab, or untick "Only ranges I\'ve edited".'
         : 'Pick at least one spot type to drill.') + '</div>';
@@ -1118,26 +1143,46 @@
     renderDeal();
   }
 
+  function fmtBB(x) { return (Math.round(x * 10) / 10) + 'bb'; }
   function renderDeal() {
     var c = D.cur, s = c.spot;
     var P = FORMATS[D.format];
     var seats = document.getElementById('seats');
-    seats.innerHTML = '';
-    var heroIdx = P.indexOf(s.hero);
-    seats.style.setProperty('--n', P.length);
+    seats.style.display = '';
+    var heroIdx = P.indexOf(s.hero), N = P.length;
+    var open = D.format === '9max' ? 3 : 2.5;
+    var html = '<div class="felt"></div>';
+    var pot = 0;
     P.forEach(function (p, k) {
-      var d = document.createElement('div');
-      var tag = '';
-      var cls = 'seat';
-      if (p === s.hero) { cls += ' hero'; tag = 'You'; }
-      else if (s.type === 'vsopen' && p === s.villain) { cls += ' act'; tag = 'Raise'; }
-      else if (s.type === 'vs3bet' && p === s.villain) { cls += ' act'; tag = '3-Bet'; }
-      else if (s.type === 'vslimp' && c.limpers.indexOf(p) >= 0) { cls += ' act'; tag = 'Limp'; }
+      var tag = '', cls = 'seat', amt = 0, big = false;
+      if (p === 'SB') amt = 0.5;
+      if (p === 'BB') amt = 1;
+      if (p === s.hero) {
+        cls += ' hero'; tag = 'You';
+        if (s.type === 'vs3bet') amt = open;
+      } else if (s.type === 'vsopen' && p === s.villain) { cls += ' act'; tag = 'Raise'; amt = open; big = true; }
+      else if (s.type === 'vs3bet' && p === s.villain) {
+        cls += ' act'; tag = '3-Bet'; amt = (p === 'SB' || p === 'BB') ? open * 4 : open * 3; big = true;
+      }
+      else if (s.type === 'vslimp' && c.limpers.indexOf(p) >= 0) { cls += ' act'; tag = 'Limp'; amt = Math.max(amt, 1); big = true; }
       else if (k < heroIdx || (s.type === 'vs3bet' && k !== heroIdx)) { cls += ' folded'; tag = 'Fold'; }
-      d.className = cls;
-      d.innerHTML = '<small>' + tag + '</small>' + posLabel(p);
-      seats.appendChild(d);
+      else if (p === 'SB' || p === 'BB') tag = 'Blind';
+      // Hero sits at the bottom; action runs clockwise (to hero's left = screen left).
+      var ang = (90 + (k - heroIdx) * 360 / N) * Math.PI / 180;
+      var cx = Math.cos(ang), cy = Math.sin(ang);
+      html += '<div class="' + cls + '" style="left:' + (50 + 45 * cx) + '%;top:' + (50 + 42 * cy) + '%"><small>' + tag + '</small>' + posLabel(p) + '</div>';
+      if (amt) {
+        pot += amt;
+        var bcls = 'bet' + (big ? ' big' : '') + (p === s.hero ? ' mine' : '');
+        html += '<div class="' + bcls + '" style="left:' + (50 + 27 * cx) + '%;top:' + (50 + 22 * cy) + '%"><i></i>' + fmtBB(amt) + '</div>';
+      }
+      if (p === 'BTN') {
+        var a2 = ang + 0.32;
+        html += '<div class="dealer" style="left:' + (50 + 31 * Math.cos(a2)) + '%;top:' + (50 + 27 * Math.sin(a2)) + '%">D</div>';
+      }
     });
+    html += '<div class="pot"><div class="k">Pot</div><div class="v">' + fmtBB(pot) + '</div></div>';
+    seats.innerHTML = html;
     var sit = spotSituation(s);
     if (s.type === 'vslimp') {
       var n = c.limpers.length;

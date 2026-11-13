@@ -5,27 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Poker Flop Texture Trainer | Dry vs Wet & Static vs Dynamic</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script id="tw-theme-config">
+    // Every palette the UI uses points at a CSS variable, so a theme only swaps variables.
+    (function () {
+      var shades = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+      var colors = { white: 'rgb(var(--c-white) / <alpha-value>)' };
+      ['slate', 'emerald', 'amber', 'rose', 'blue', 'teal', 'red'].forEach(function (n) {
+        colors[n] = {};
+        shades.forEach(function (s) { colors[n][s] = 'rgb(var(--c-' + n + '-' + s + ') / <alpha-value>)'; });
+      });
+      tailwind.config = { theme: { extend: { colors: colors } } };
+    })();
+  </script>
+  <script>
+    // Theme: ?theme=felt|minimal|light|midnight in the URL, else the last one picked.
+    (function () {
+      var allowed = ['midnight', 'felt', 'minimal', 'light'];
+      var q = new URLSearchParams(location.search).get('theme');
+      var saved = null;
+      try { saved = localStorage.getItem('flopmaster_theme'); } catch (e) {}
+      var theme = allowed.indexOf(q) >= 0 ? q : (allowed.indexOf(saved) >= 0 ? saved : 'midnight');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
     body {
       font-family: 'Inter', sans-serif;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
+      background-image: var(--page-bg);
+      background-attachment: fixed;
     }
     .font-mono-code {
       font-family: 'JetBrains Mono', monospace;
     }
     .poker-felt {
-      background: radial-gradient(circle at 50% 25%, #154c29 0%, #0d301a 60%, #05140b 100%);
+      background: radial-gradient(circle at 50% 25%, var(--felt-1) 0%, var(--felt-2) 60%, var(--felt-3) 100%);
     }
     .poker-table-border {
-      box-shadow: inset 0 0 0 6px #2b180d, inset 0 0 20px rgba(0, 0, 0, 0.9), 0 16px 32px -8px rgba(0,0,0,0.75);
+      box-shadow: inset 0 0 0 6px var(--rail), inset 0 0 20px rgba(0, 0, 0, 0.9), 0 16px 32px -8px rgba(0,0,0,0.75);
     }
     @media (min-width: 640px) {
       .poker-table-border {
-        box-shadow: inset 0 0 0 10px #2b180d, inset 0 0 26px rgba(0, 0, 0, 0.9), 0 20px 40px -10px rgba(0,0,0,0.75);
+        box-shadow: inset 0 0 0 10px var(--rail), inset 0 0 26px rgba(0, 0, 0, 0.9), 0 20px 40px -10px rgba(0,0,0,0.75);
       }
     }
     @keyframes cardDeal {
@@ -106,10 +131,29 @@
     }
 
     ::-webkit-scrollbar { width: 4px; height: 4px; }
-    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
-    ::-webkit-scrollbar-thumb { background: rgba(71, 85, 105, 0.6); border-radius: 9999px; }
+    ::-webkit-scrollbar-track { background: rgb(var(--c-slate-900) / 0.6); }
+    ::-webkit-scrollbar-thumb { background: rgb(var(--c-slate-600) / 0.6); border-radius: 9999px; }
     .scrollbar-none::-webkit-scrollbar { display: none; }
     .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* ===== THEMES: colors used by Tailwind classes resolve to these variables ===== */
+    :root { --c-white: 255 255 255; --c-slate-50: 248 250 252; --c-slate-100: 241 245 249; --c-slate-200: 226 232 240; --c-slate-300: 203 213 225; --c-slate-400: 148 163 184; --c-slate-500: 100 116 139; --c-slate-600: 71 85 105; --c-slate-700: 51 65 85; --c-slate-800: 30 41 59; --c-slate-900: 15 23 42; --c-slate-950: 2 6 23; --c-emerald-50: 236 253 245; --c-emerald-100: 209 250 229; --c-emerald-200: 167 243 208; --c-emerald-300: 110 231 183; --c-emerald-400: 52 211 153; --c-emerald-500: 16 185 129; --c-emerald-600: 5 150 105; --c-emerald-700: 4 120 87; --c-emerald-800: 6 95 70; --c-emerald-900: 6 78 59; --c-emerald-950: 2 44 34; --c-amber-50: 255 251 235; --c-amber-100: 254 243 199; --c-amber-200: 253 230 138; --c-amber-300: 252 211 77; --c-amber-400: 251 191 36; --c-amber-500: 245 158 11; --c-amber-600: 217 119 6; --c-amber-700: 180 83 9; --c-amber-800: 146 64 14; --c-amber-900: 120 53 15; --c-amber-950: 69 26 3; --c-rose-50: 255 241 242; --c-rose-100: 255 228 230; --c-rose-200: 254 205 211; --c-rose-300: 253 164 175; --c-rose-400: 251 113 133; --c-rose-500: 244 63 94; --c-rose-600: 225 29 72; --c-rose-700: 190 18 60; --c-rose-800: 159 18 57; --c-rose-900: 136 19 55; --c-rose-950: 76 5 25; --c-blue-50: 239 246 255; --c-blue-100: 219 234 254; --c-blue-200: 191 219 254; --c-blue-300: 147 197 253; --c-blue-400: 96 165 250; --c-blue-500: 59 130 246; --c-blue-600: 37 99 235; --c-blue-700: 29 78 216; --c-blue-800: 30 64 175; --c-blue-900: 30 58 138; --c-blue-950: 23 37 84; --c-teal-50: 240 253 250; --c-teal-100: 204 251 241; --c-teal-200: 153 246 228; --c-teal-300: 94 234 212; --c-teal-400: 45 212 191; --c-teal-500: 20 184 166; --c-teal-600: 13 148 136; --c-teal-700: 15 118 110; --c-teal-800: 17 94 89; --c-teal-900: 19 78 74; --c-teal-950: 4 47 46; --c-red-50: 254 242 242; --c-red-100: 254 226 226; --c-red-200: 254 202 202; --c-red-300: 252 165 165; --c-red-400: 248 113 113; --c-red-500: 239 68 68; --c-red-600: 220 38 38; --c-red-700: 185 28 28; --c-red-800: 153 27 27; --c-red-900: 127 29 29; --c-red-950: 69 10 10;
+      --felt-1: #154c29; --felt-2: #0d301a; --felt-3: #05140b; --rail: #2b180d; --page-bg: none; }
+    [data-theme="felt"] { --c-teal-400: 242 215 124; --c-teal-500: 232 194 90; --c-slate-50: 243 246 242; --c-slate-100: 234 240 234; --c-slate-200: 214 226 216; --c-slate-300: 180 200 185; --c-slate-400: 135 164 145; --c-slate-500: 92 125 104; --c-slate-600: 60 90 72; --c-slate-700: 38 64 47; --c-slate-800: 23 48 34; --c-slate-900: 14 33 23; --c-slate-950: 7 20 13; --c-emerald-50: 253 248 231; --c-emerald-100: 250 239 198; --c-emerald-200: 246 227 154; --c-emerald-300: 242 215 124; --c-emerald-400: 232 194 90; --c-emerald-500: 212 167 58; --c-emerald-600: 176 134 42; --c-emerald-700: 138 103 34; --c-emerald-800: 110 82 31; --c-emerald-900: 92 69 29; --c-emerald-950: 44 32 9;
+      --felt-1: #1d6b3a; --felt-2: #11472a; --felt-3: #072314; --rail: #4a2a14;
+      --page-bg: radial-gradient(ellipse at 50% -10%, #12331f 0%, #07140d 55%); }
+    [data-theme="minimal"] { --c-teal-400: 129 140 248; --c-teal-500: 99 102 241; --c-white: 250 250 250; --c-slate-50: 250 250 250; --c-slate-100: 245 245 245; --c-slate-200: 229 229 229; --c-slate-300: 212 212 212; --c-slate-400: 163 163 163; --c-slate-500: 115 115 115; --c-slate-600: 82 82 82; --c-slate-700: 58 58 58; --c-slate-800: 38 38 38; --c-slate-900: 23 23 23; --c-slate-950: 10 10 10; --c-emerald-50: 245 243 255; --c-emerald-100: 237 233 254; --c-emerald-200: 221 214 254; --c-emerald-300: 196 181 253; --c-emerald-400: 167 139 250; --c-emerald-500: 139 92 246; --c-emerald-600: 124 58 237; --c-emerald-700: 109 40 217; --c-emerald-800: 91 33 182; --c-emerald-900: 76 29 149; --c-emerald-950: 30 19 56;
+      --felt-1: #262626; --felt-2: #171717; --felt-3: #0a0a0a; --rail: #262626; --page-bg: none; }
+    [data-theme="light"] { --c-white: 15 23 42; --c-slate-50: 2 6 23; --c-slate-100: 15 23 42; --c-slate-200: 30 41 59; --c-slate-300: 51 65 85; --c-slate-400: 82 96 117; --c-slate-500: 100 116 139; --c-slate-600: 148 163 184; --c-slate-700: 203 213 225; --c-slate-800: 226 232 240; --c-slate-900: 255 255 255; --c-slate-950: 241 245 249; --c-emerald-50: 2 44 34; --c-emerald-100: 6 78 59; --c-emerald-200: 6 95 70; --c-emerald-300: 4 120 87; --c-emerald-400: 5 150 105; --c-emerald-500: 5 150 105; --c-emerald-600: 16 185 129; --c-emerald-700: 52 211 153; --c-emerald-800: 110 231 183; --c-emerald-900: 167 243 208; --c-emerald-950: 236 253 245; --c-amber-300: 146 64 14; --c-amber-400: 180 83 9; --c-amber-500: 217 119 6; --c-amber-950: 255 251 235; --c-rose-300: 190 18 60; --c-rose-400: 225 29 72; --c-rose-500: 244 63 94; --c-rose-900: 255 228 230; --c-rose-950: 255 241 242; --c-blue-300: 29 78 216; --c-blue-400: 37 99 235; --c-blue-500: 59 130 246; --c-blue-950: 239 246 255; --c-teal-400: 13 148 136; --c-teal-500: 20 184 166; --c-red-400: 220 38 38;
+      --felt-1: #1a6b3c; --felt-2: #12502c; --felt-3: #0a3019; --rail: #6b4423; --page-bg: none; }
+    /* The felt table stays dark in the light theme, so its text keeps dark-theme colors */
+    [data-theme="light"] .poker-felt { --c-white: 255 255 255; --c-slate-50: 248 250 252; --c-slate-100: 241 245 249; --c-slate-200: 226 232 240; --c-slate-300: 203 213 225; --c-slate-400: 148 163 184; --c-slate-500: 100 116 139; --c-slate-600: 71 85 105; --c-slate-700: 51 65 85; --c-slate-800: 30 41 59; --c-slate-900: 15 23 42; --c-slate-950: 2 6 23; --c-emerald-50: 236 253 245; --c-emerald-100: 209 250 229; --c-emerald-200: 167 243 208; --c-emerald-300: 110 231 183; --c-emerald-400: 52 211 153; --c-emerald-500: 16 185 129; --c-emerald-600: 5 150 105; --c-emerald-700: 4 120 87; --c-emerald-800: 6 95 70; --c-emerald-900: 6 78 59; --c-emerald-950: 2 44 34; --c-amber-50: 255 251 235; --c-amber-100: 254 243 199; --c-amber-200: 253 230 138; --c-amber-300: 252 211 77; --c-amber-400: 251 191 36; --c-amber-500: 245 158 11; --c-amber-600: 217 119 6; --c-amber-700: 180 83 9; --c-amber-800: 146 64 14; --c-amber-900: 120 53 15; --c-amber-950: 69 26 3; --c-rose-50: 255 241 242; --c-rose-100: 255 228 230; --c-rose-200: 254 205 211; --c-rose-300: 253 164 175; --c-rose-400: 251 113 133; --c-rose-500: 244 63 94; --c-rose-600: 225 29 72; --c-rose-700: 190 18 60; --c-rose-800: 159 18 57; --c-rose-900: 136 19 55; --c-rose-950: 76 5 25; --c-blue-50: 239 246 255; --c-blue-100: 219 234 254; --c-blue-200: 191 219 254; --c-blue-300: 147 197 253; --c-blue-400: 96 165 250; --c-blue-500: 59 130 246; --c-blue-600: 37 99 235; --c-blue-700: 29 78 216; --c-blue-800: 30 64 175; --c-blue-900: 30 58 138; --c-blue-950: 23 37 84; --c-teal-50: 240 253 250; --c-teal-100: 204 251 241; --c-teal-200: 153 246 228; --c-teal-300: 94 234 212; --c-teal-400: 45 212 191; --c-teal-500: 20 184 166; --c-teal-600: 13 148 136; --c-teal-700: 15 118 110; --c-teal-800: 17 94 89; --c-teal-900: 19 78 74; --c-teal-950: 4 47 46; --c-red-50: 254 242 242; --c-red-100: 254 226 226; --c-red-200: 254 202 202; --c-red-300: 252 165 165; --c-red-400: 248 113 113; --c-red-500: 239 68 68; --c-red-600: 220 38 38; --c-red-700: 185 28 28; --c-red-800: 153 27 27; --c-red-900: 127 29 29; --c-red-950: 69 10 10; }
+    [data-theme="felt"] .brand-name { font-family: 'Playfair Display', serif; letter-spacing: 0.01em; }
+    [data-theme="felt"] .poker-table-border { outline: 1px solid rgba(232, 194, 90, 0.35); outline-offset: -11px; }
+    [data-theme="minimal"] .poker-table-border { box-shadow: inset 0 0 0 1px #333, 0 12px 28px -12px rgba(0,0,0,0.8) !important; }
+    [data-theme="minimal"] .poker-felt { border-color: #333 !important; }
+    [data-theme="minimal"] .poker-felt > .absolute { display: none; }
+    [data-theme="light"] header, [data-theme="light"] main > section > div:not(.poker-felt) { box-shadow: 0 1px 2px rgba(15,23,42,0.05); }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-slate-950">
@@ -126,7 +170,7 @@
             </div>
             <div>
               <div class="flex items-center gap-1.5">
-                <span class="font-extrabold tracking-tight text-white text-base sm:text-xl">FlopMaster</span>
+                <span class="brand-name font-extrabold tracking-tight text-white text-base sm:text-xl">FlopMaster</span>
                 <span class="text-[9px] sm:text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-semibold border border-emerald-500/30">GTO Trainer</span>
               </div>
               <p class="text-[10px] text-slate-400 hidden sm:block">Texture Classifier: Dry vs Wet &bull; Static vs Dynamic</p>
@@ -183,6 +227,34 @@
       </div>
     </div>
   </header>
+
+  <!-- Theme preview picker -->
+  <div id="theme-picker" class="fixed bottom-3 right-3 z-50 flex items-center gap-1 p-1 rounded-full bg-slate-900/95 border border-slate-700 shadow-2xl text-[11px] font-semibold">
+    <span class="pl-2 pr-1 text-slate-400 hidden sm:inline">Theme</span>
+    <button type="button" data-theme-btn="midnight" class="px-2.5 py-1 rounded-full">Midnight</button>
+    <button type="button" data-theme-btn="felt" class="px-2.5 py-1 rounded-full">Felt</button>
+    <button type="button" data-theme-btn="minimal" class="px-2.5 py-1 rounded-full">Minimal</button>
+    <button type="button" data-theme-btn="light" class="px-2.5 py-1 rounded-full">Light</button>
+  </div>
+  <script>
+    (function () {
+      function paint() {
+        var cur = document.documentElement.getAttribute('data-theme');
+        document.querySelectorAll('[data-theme-btn]').forEach(function (b) {
+          b.className = 'px-2.5 py-1 rounded-full ' + (b.getAttribute('data-theme-btn') === cur ? 'bg-emerald-500 text-slate-950' : 'text-slate-300 hover:bg-slate-800');
+        });
+      }
+      document.querySelectorAll('[data-theme-btn]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var t = b.getAttribute('data-theme-btn');
+          document.documentElement.setAttribute('data-theme', t);
+          try { localStorage.setItem('flopmaster_theme', t); } catch (e) {}
+          paint();
+        });
+      });
+      paint();
+    })();
+  </script>
 
   <main class="flex-1 max-w-7xl w-full mx-auto p-2.5 sm:p-5 lg:p-8 flex flex-col gap-4 sm:gap-6">
 

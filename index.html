@@ -532,11 +532,12 @@
             </div>
           </div>
         </div>
-        <div id="strat-type-tabs" class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+        <div id="strat-type-tabs" class="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
           <button type="button" data-strat="bet" class="strat-type-btn py-2 px-2 rounded-xl border-2 text-xs sm:text-sm font-bold transition active:scale-95">🎯 Bet or Check</button>
           <button type="button" data-strat="size" class="strat-type-btn py-2 px-2 rounded-xl border-2 text-xs sm:text-sm font-bold transition active:scale-95">📏 Bet Size</button>
           <button type="button" data-strat="adv" class="strat-type-btn py-2 px-2 rounded-xl border-2 text-xs sm:text-sm font-bold transition active:scale-95">⚖️ Who Has the Edge</button>
           <button type="button" data-strat="turn" class="strat-type-btn py-2 px-2 rounded-xl border-2 text-xs sm:text-sm font-bold transition active:scale-95">🃏 Turn Card</button>
+          <button type="button" data-strat="exploit" class="strat-type-btn col-span-2 sm:col-span-1 py-2 px-2 rounded-xl border-2 text-xs sm:text-sm font-bold transition active:scale-95">🕵️ vs Player Type</button>
         </div>
       </div>
 
@@ -547,6 +548,7 @@
       </div>
 
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 sm:p-5 flex flex-col gap-3 shadow-xl">
+        <div id="strat-villain" class="hidden"></div>
         <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2 border-b border-slate-800 pb-3">
           <div>
             <h3 id="strat-question" class="text-sm sm:text-base font-extrabold text-white">--</h3>
@@ -1542,6 +1544,11 @@
           { key: 'caller', title: 'Caller (BB)', hint: 'More straights, two-pair, draws' }
         ]
       },
+      exploit: {
+        question: 'vs Player Type',
+        scenario: '',
+        options: []
+      },
       turn: {
         question: 'Who does this turn card help?',
         scenario: 'BTN opened, BB called, and BTN bet the flop and got called. Here comes the turn.',
@@ -1552,6 +1559,176 @@
         ]
       }
     };
+
+
+    // VS PLAYER TYPE: the "node lock" idea as a drill. Villain's tendencies are fixed
+    // (like locking their node in a solver) and you pick the counter-adjustment.
+    const VILLAIN_PROFILES = {
+      station: {
+        name: 'Calling Station', icon: '🐟', tone: 'sky',
+        blurb: 'Calls too much, rarely raises without a monster.',
+        stats: [['VPIP', '45'], ['PFR', '8'], ['Fold to c-bet', '25%'], ['Check-raise', '4%']]
+      },
+      nit: {
+        name: 'Nit', icon: '🪨', tone: 'slate',
+        blurb: 'Folds too much. When they put money in, they have it.',
+        stats: [['VPIP', '14'], ['PFR', '11'], ['Fold to c-bet', '65%'], ['Check-raise', '5%']]
+      },
+      maniac: {
+        name: 'Maniac', icon: '🔥', tone: 'rose',
+        blurb: 'Bets, raises and bluffs with almost anything.',
+        stats: [['VPIP', '55'], ['PFR', '35'], ['Fold to c-bet', '30%'], ['Check-raise', '20%']]
+      },
+      reg: {
+        name: 'Balanced Reg', icon: '🎯', tone: 'emerald',
+        blurb: 'Plays close to solver. No big leak to attack.',
+        stats: [['VPIP', '24'], ['PFR', '20'], ['Fold to c-bet', '45%'], ['Check-raise', '10%']]
+      }
+    };
+
+    const EXPLOIT_NODES = {
+      bluff: {
+        question: 'You missed. Bluff or give up?',
+        scenario: p => `BTN opens, ${p} in the BB calls and checks to you. You have air: no pair, no real draw.`,
+        options: [
+          { key: 'small', title: 'Bluff small', hint: 'C-bet 25–33%' },
+          { key: 'big', title: 'Bluff big', hint: 'C-bet 66–80%' },
+          { key: 'check', title: 'Give up', hint: 'Check back' }
+        ],
+        solve(prof, ev) {
+          if (prof === 'station') return { answer: 'check', why: 'A calling station folds to only about 1 in 4 c-bets. Your bluff needs them to fold far more than that to profit, so save your chips. Your value bets are what make money against this player.' };
+          if (prof === 'nit') return { answer: 'small', why: 'A nit folds about 65% to a c-bet, way more than they should. A small bet already wins more than enough, and betting bigger just risks more to get the same folds. Bluff often, bluff cheap.' };
+          if (prof === 'maniac') return { answer: 'check', why: 'A maniac check-raises around 20% and rarely folds. If you bluff here you will often get raised off your hand. Check back, give up the pot, and let them do the bluffing on the hands where you can call.' };
+          const base = analyzeBetOrCheck(ev, rangeEdge(ev)).answer;
+          return { answer: base, why: `Against a balanced player there is no leak to exploit, so play the baseline for this texture (<strong>${ev.quadrantTitle}</strong>): ${base === 'small' ? 'range bet small, bluffs included.' : base === 'big' ? 'bet big with your best draws and backdoors, since this board is dynamic and you have the edge.' : 'check back a lot, because BB hits this board well.'}` };
+        }
+      },
+      value: {
+        question: 'You have a strong hand. How do you get paid?',
+        scenario: p => `BTN opens, ${p} in the BB calls and checks to you. You have an overpair or top pair, good kicker.`,
+        options: [
+          { key: 'small', title: 'Bet small', hint: '25–33% pot' },
+          { key: 'big', title: 'Bet big', hint: '75%+ pot' },
+          { key: 'check', title: 'Check to induce', hint: 'Let them bluff' }
+        ],
+        solve(prof, ev) {
+          if (prof === 'station') return { answer: 'big', why: 'A calling station calls with any pair or draw regardless of size. They call the big bet with the same hands they would call a small one with, so make them pay the maximum. Size up for value.' };
+          if (prof === 'nit') return { answer: 'small', why: 'A nit folds most of their range to a big bet and only continues when they beat you. A small bet keeps their weaker pairs and draws in, so you get paid by hands that would fold to a big bet.' };
+          if (prof === 'maniac') {
+            if (ev.quadrantKey === 'wet_dynamic') return { answer: 'big', why: 'Normally you would check to let a maniac bluff, but this board is wet and dynamic. A free card can easily beat you, and maniacs happily call or raise with all their draws. Bet big now.' };
+            return { answer: 'check', why: `A maniac bets when checked to with almost anything. On a ${ev.quadrantTitle.toLowerCase()} board few turns hurt you, so checking lets them bluff off chips they would never put in against a bet. Let them hang themselves.` };
+          }
+          const size = analyzeBetSize(ev, false).answer;
+          return { answer: size === 'small' ? 'small' : 'big', why: `Against a balanced player, use the standard size for the texture. ${ev.quadrantTitle}: ${size === 'small' ? 'static boards favor small bets.' : 'dynamic boards favor bigger bets so draws pay.'}` };
+        }
+      },
+      raised: {
+        question: 'You c-bet and got check-raised. Now what?',
+        scenario: p => `BTN opens, ${p} in the BB calls. You c-bet with top pair, weak kicker, and they check-raise.`,
+        options: [
+          { key: 'fold', title: 'Fold', hint: 'Their raise is too strong' },
+          { key: 'call', title: 'Call', hint: 'Bluff-catch' },
+          { key: 'raise', title: '3-bet', hint: 'Raise again' }
+        ],
+        solve(prof) {
+          if (prof === 'station') return { answer: 'fold', why: 'A calling station check-raises only about 4% of the time, and when a passive player suddenly raises it is almost always two pair or better. Top pair, weak kicker is crushed. Fold and move on.' };
+          if (prof === 'nit') return { answer: 'fold', why: 'A nit does not check-raise as a bluff. Their raise means sets, two pair, or a big draw at worst. Folding a weak top pair here is a big winning exploit.' };
+          if (prof === 'maniac') return { answer: 'call', why: 'A maniac check-raises around 20% with lots of air and weak draws, so your top pair is often ahead. Call, do not 3-bet: a raise folds out their bluffs and only gets action from hands that beat you.' };
+          return { answer: 'call', why: 'A balanced player check-raises with a mix of value and draws. Top pair is too strong to fold, but not strong enough to raise again. Call and re-evaluate on the turn.' };
+        }
+      },
+      draw: {
+        question: 'You have a strong draw and face a c-bet.',
+        scenario: (p, ev) => `BTN (${p}) opens, you call in the BB, check, and they c-bet. You have ${ev.isTwoTone || ev.isMonotone ? 'a flush draw' : 'an open-ended straight draw'}.`,
+        boardOk: ev => ev.isTwoTone || ev.isMonotone || ev.straightScore >= 22,
+        options: [
+          { key: 'fold', title: 'Fold', hint: 'Not worth chasing' },
+          { key: 'call', title: 'Call', hint: 'See the turn' },
+          { key: 'raise', title: 'Check-raise', hint: 'Semi-bluff' }
+        ],
+        solve(prof, ev) {
+          if (prof === 'station') return { answer: 'call', why: 'Semi-bluffing needs fold equity, and a calling station rarely folds. Just call: your draw has great implied odds because they pay you off when you hit.' };
+          if (prof === 'nit') return { answer: 'raise', why: 'A nit folds most of their c-bets to a raise. Check-raising wins the pot right away a lot, and when they do call you still have plenty of equity to hit. This is the perfect semi-bluff target.' };
+          if (prof === 'maniac') return { answer: 'call', why: 'Raising into a maniac invites a 3-bet shove you then have to call with just a draw. Calling keeps their bluffs in, keeps the pot controllable, and they will keep betting when you hit.' };
+          const edge = rangeEdge(ev);
+          if (edge.side === 'caller') return { answer: 'raise', why: 'Against a balanced player, this board favors your BB range, so check-raising your strong draws alongside your value hands is the baseline play.' };
+          return { answer: 'call', why: 'Against a balanced player on a board that does not favor BB, the baseline with a draw is mostly calling. Solvers raise some draws, but calling is the main line.' };
+        }
+      },
+      thin: {
+        question: 'Medium-strength hand, checked to you. Bet for thin value?',
+        scenario: p => `BTN opens, ${p} in the BB calls and checks to you. You have second pair or a weak top pair.`,
+        options: [
+          { key: 'small', title: 'Bet small', hint: 'Thin value, 25–33%' },
+          { key: 'big', title: 'Bet big', hint: '75%+ pot' },
+          { key: 'check', title: 'Check back', hint: 'Pot control' }
+        ],
+        solve(prof, ev) {
+          if (prof === 'station') return { answer: 'small', why: 'A calling station calls with worse pairs, ace-high and gutshots. That makes a thin value bet profitable where it would not be against others. Bet small: big enough to get value, small enough that you are not in trouble if raised.' };
+          if (prof === 'nit') return { answer: 'check', why: 'A nit only calls with hands that beat you and folds everything worse. Betting a medium hand turns it into a bluff that folds out worse and gets called by better. Check back and take it to showdown.' };
+          if (prof === 'maniac') return { answer: 'check', why: 'Against a maniac, betting a medium hand often gets check-raised off it. Check back, keep the pot small, and use your hand to bluff-catch when they bet the turn.' };
+          if (ev.quadrantKey === 'dry_static') return { answer: 'small', why: 'Against a balanced player on a dry, static board, your whole range bets small, medium hands included.' };
+          return { answer: 'check', why: `Against a balanced player on a ${ev.quadrantTitle.toLowerCase()} board, medium hands mostly check back for pot control and showdown value.` };
+        }
+      }
+    };
+
+    function dealExploitSpot() {
+      const nodeKeys = Object.keys(EXPLOIT_NODES);
+      const nodeKey = nodeKeys[Math.floor(Math.random() * nodeKeys.length)];
+      const node = EXPLOIT_NODES[nodeKey];
+      const profKeys = Object.keys(VILLAIN_PROFILES);
+      const prof = profKeys[Math.floor(Math.random() * profKeys.length)];
+      let cards, ev;
+      for (let i = 0; i < 200; i++) {
+        cards = sortCards(generateRandomFlop('all'));
+        ev = evaluateFlop(cards);
+        if (!node.boardOk || node.boardOk(ev)) break;
+      }
+      const r = node.solve(prof, ev);
+      const p = VILLAIN_PROFILES[prof];
+      const reasons = [
+        `<strong>${p.icon} ${p.name}:</strong> ${r.why}`,
+        prof === 'reg'
+          ? '<strong>Node-lock idea:</strong> With no leak locked in, the solver\'s counter-strategy is just the baseline. Only deviate when you have a real read.'
+          : `<strong>Node-lock idea:</strong> Lock the villain to "${p.blurb.toLowerCase().replace(/\.$/, '')}" and the solver shifts exactly this way. Keep reads realistic, since extreme locks give extreme answers.`
+      ];
+      return {
+        cards, turn: null, prof, nodeKey,
+        def: { question: node.question, scenario: node.scenario(`a ${p.name.toLowerCase()}`, ev), options: node.options },
+        solved: { answer: r.answer, reasons }
+      };
+    }
+
+    function renderVillainCard() {
+      const el = document.getElementById('strat-villain');
+      if (!el) return;
+      if (!stratSpot || !stratSpot.prof) { el.className = 'hidden'; el.innerHTML = ''; return; }
+      const p = VILLAIN_PROFILES[stratSpot.prof];
+      const tones = {
+        sky: 'border-sky-500/40 bg-sky-950/40 text-sky-300',
+        slate: 'border-slate-500/50 bg-slate-800/50 text-slate-200',
+        rose: 'border-rose-500/40 bg-rose-950/40 text-rose-300',
+        emerald: 'border-emerald-500/40 bg-emerald-950/40 text-emerald-300'
+      };
+      el.className = `rounded-xl border p-2.5 sm:p-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 ${tones[p.tone]}`;
+      el.innerHTML = `
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="text-2xl leading-none shrink-0">${p.icon}</div>
+          <div class="min-w-0">
+            <div class="text-[10px] uppercase tracking-widest font-bold opacity-70">Villain</div>
+            <div class="font-extrabold text-sm sm:text-base leading-tight">${p.name}</div>
+            <div class="text-[11px] text-slate-300">${p.blurb}</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-4 gap-1.5 sm:ml-auto shrink-0">
+          ${p.stats.map(([k, v]) => `<div class="bg-slate-950/60 rounded-lg px-2 py-1 text-center"><div class="text-[9px] sm:text-[10px] text-slate-400 leading-tight whitespace-nowrap">${k}</div><div class="font-bold font-mono-code text-xs sm:text-sm text-white">${v}</div></div>`).join('')}
+        </div>`;
+    }
+
+    function currentStratDef() {
+      return (stratSpot && stratSpot.def) || STRAT_TYPES[stratState.type];
+    }
 
     const STRAT_STORAGE_KEY = 'flopmaster_strategy_v1';
     let stratState = { type: 'bet', sticky: false, stats: {} };
@@ -1589,6 +1766,13 @@
     function dealStratSpot() {
       const type = stratState.type;
       const def = STRAT_TYPES[type];
+      if (type === 'exploit') {
+        stratSpot = dealExploitSpot();
+        stratAnswered = false;
+        playDealSound();
+        renderStratSpot(true);
+        return;
+      }
       // Pick the target answer first so every answer shows up about equally often
       const target = def.options[Math.floor(Math.random() * def.options.length)].key;
       let spot = null;
@@ -1623,7 +1807,7 @@
 
     function renderStratSpot(anim = false) {
       const type = stratState.type;
-      const def = STRAT_TYPES[type];
+      const def = currentStratDef();
 
       document.querySelectorAll('.strat-type-btn').forEach(btn => {
         const active = btn.getAttribute('data-strat') === type;
@@ -1634,6 +1818,7 @@
       document.getElementById('strat-scenario').textContent = def.scenario;
       document.getElementById('strat-sticky-wrap').classList.toggle('hidden', type !== 'size');
       document.getElementById('strat-sticky-toggle').checked = !!stratState.sticky;
+      renderVillainCard();
 
       renderStratCards(anim);
 
@@ -1656,7 +1841,7 @@
     function answerStrat(key) {
       if (stratAnswered || !stratSpot) return;
       stratAnswered = true;
-      const def = STRAT_TYPES[stratState.type];
+      const def = currentStratDef();
       const correctKey = stratSpot.solved.answer;
       const isCorrect = key === correctKey;
 
@@ -1907,7 +2092,7 @@
             if (stratAnswered) dealStratSpot();
             return;
           }
-          const keys = STRAT_TYPES[stratState.type].options.map(o => o.key);
+          const keys = currentStratDef().options.map(o => o.key);
           const idx = parseInt(e.key, 10) - 1;
           if (idx >= 0 && idx < keys.length) answerStrat(keys[idx]);
           return;
